@@ -73,6 +73,15 @@ export function extractNarrativeSegments(content: string, articleTitle: string):
       continue;
     }
 
+    // Skip PDF widget directives and raw links
+    if (
+      /^\{\{pdf\|/i.test(line) ||
+      /^\[pdf:/i.test(line) ||
+      /^\[.*?\]\(.*?\.pdf(?:\?.*?)?\)$/i.test(line)
+    ) {
+      continue;
+    }
+
     // Blockquote handling
     if (line.toLowerCase().includes('<blockquote>') || inBlockquote) {
       if (!inBlockquote) inBlockquote = true;

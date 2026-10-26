@@ -124,13 +124,31 @@ export class WikiDataAccess {
         };
       }
 
+      // Check if user has local custom edits (e.g. inserted PDFs from editor)
+      let resolvedArticle = article;
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          const overrideKey = `wiki_override_${find.CampaignID}_${canonicalSlug}`;
+          const saved = localStorage.getItem(overrideKey);
+          if (saved) {
+            resolvedArticle = {
+              ...article,
+              ArticleContent: saved,
+              LastModified: 'Modificado por el Usuario',
+            };
+          }
+        }
+      } catch {
+        // Fallback gracefully to default seed
+      }
+
       return {
         CodeNumber: 302,
         CodeName: 'Found',
         Message: 'Article found successfully.',
         ErrorNumber: null,
         ServerName: 'local-portal',
-        Result: article,
+        Result: resolvedArticle,
       };
     } catch {
       return {
@@ -233,6 +251,40 @@ export class WikiDataAccess {
         ServerName: 'local-portal',
         Result: null,
       };
+    }
+  }
+
+  /**
+   * Persists updated article markdown content into localStorage for client-side editing.
+   */
+  public static SaveArticleContent(
+    campaignID: string,
+    articleSlug: string,
+    content: string,
+  ): boolean {
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) return false;
+      const canonicalSlug = this.ResolveAlias(campaignID, articleSlug);
+      const overrideKey = `wiki_override_${campaignID}_${canonicalSlug}`;
+      localStorage.setItem(overrideKey, content);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Clears custom local overrides for an article and restores the original seed content.
+   */
+  public static ResetArticleContent(campaignID: string, articleSlug: string): boolean {
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) return false;
+      const canonicalSlug = this.ResolveAlias(campaignID, articleSlug);
+      const overrideKey = `wiki_override_${campaignID}_${canonicalSlug}`;
+      localStorage.removeItem(overrideKey);
+      return true;
+    } catch {
+      return false;
     }
   }
 }

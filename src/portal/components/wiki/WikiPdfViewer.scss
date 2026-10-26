@@ -1,0 +1,612 @@
+// Styles for Wiki PDF Reader Widget & Expanded Adobe Acrobat Reader Modal
+
+.wiki-pdf-component-wrapper {
+  margin: 1.75rem 0;
+  width: 100%;
+}
+
+// 1. INLINE ARTICLE READER CARD
+.wiki-pdf-card {
+  background: linear-gradient(145deg, rgba(20, 24, 33, 0.95), rgba(13, 16, 23, 0.98));
+  border: 1px solid rgba(229, 37, 42, 0.35);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(229, 37, 42, 0.08);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    border-color: rgba(229, 37, 42, 0.65);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(229, 37, 42, 0.15);
+  }
+
+  .wiki-pdf-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0.85rem 1.25rem;
+    background: rgba(30, 35, 48, 0.85);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+    .pdf-header-info {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      min-width: 0;
+
+      .adobe-badge-square {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, #e5252a, #b3161a);
+        color: #ffffff;
+        border-radius: 7px;
+        box-shadow: 0 3px 10px rgba(229, 37, 42, 0.4);
+        flex-shrink: 0;
+
+        i {
+          font-size: 1.15rem;
+        }
+
+        span {
+          font-size: 0.62rem;
+          font-weight: 800;
+          letter-spacing: 0.5px;
+          line-height: 1;
+          margin-top: 2px;
+        }
+      }
+
+      .pdf-header-meta {
+        min-width: 0;
+
+        .pdf-doc-title {
+          margin: 0;
+          font-size: 1.05rem;
+          font-weight: 700;
+          color: #f1f5f9;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          font-family: 'Space Grotesk', -apple-system, sans-serif;
+        }
+
+        .pdf-doc-submeta {
+          display: flex;
+          align-items: center;
+          gap: 0.45rem;
+          font-size: 0.78rem;
+          color: #94a3b8;
+          margin-top: 3px;
+
+          .badge-tag {
+            background: rgba(229, 37, 42, 0.2);
+            color: #ff6b6b;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.7rem;
+            border: 1px solid rgba(229, 37, 42, 0.3);
+          }
+
+          .separator {
+            color: #475569;
+          }
+
+          .source-hint {
+            color: #cbd5e1;
+          }
+        }
+      }
+    }
+
+    .pdf-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+
+      .btn-adobe-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.45rem 0.95rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: linear-gradient(135deg, #e5252a, #c0191e);
+        color: #ffffff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: transform 0.15s ease, filter 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 3px 12px rgba(229, 37, 42, 0.35);
+
+        &:hover {
+          transform: translateY(-1px);
+          filter: brightness(1.1);
+          box-shadow: 0 5px 16px rgba(229, 37, 42, 0.5);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+
+      .btn-adobe-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        font-size: 0.9rem;
+        background: rgba(255, 255, 255, 0.08);
+        color: #cbd5e1;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.2s ease, color 0.2s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.18);
+          color: #ffffff;
+        }
+      }
+    }
+  }
+
+  // Inline Preview Frame
+  .wiki-pdf-preview-box {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    background: #525659; // Adobe Acrobat Canvas Grey
+    overflow: hidden;
+
+    .wiki-pdf-inline-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #525659;
+      display: block;
+    }
+
+    .wiki-pdf-preview-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.3);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 1.25rem;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.25s ease, background 0.25s ease;
+
+      .overlay-pill {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(229, 37, 42, 0.92);
+        color: #ffffff;
+        padding: 0.5rem 1.15rem;
+        border-radius: 30px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+        transform: translateY(8px);
+        transition: transform 0.25s ease;
+      }
+
+      &:hover,
+      &:focus-visible {
+        opacity: 1;
+        background: rgba(15, 23, 42, 0.55);
+
+        .overlay-pill {
+          transform: translateY(0);
+        }
+      }
+    }
+  }
+
+  .wiki-pdf-card-caption {
+    padding: 0.6rem 1.25rem;
+    font-size: 0.82rem;
+    color: #94a3b8;
+    background: rgba(15, 23, 42, 0.6);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-style: italic;
+  }
+}
+
+// 2. EXPANDED / FULLSCREEN ADOBE ACROBAT READER MODAL
+.adobe-reader-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #525659; // Authentic Adobe Acrobat Workspace Canvas
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: adobeModalFadeIn 0.2s ease-out;
+
+  &.is-fullscreen {
+    width: 100vw;
+    height: 100vh;
+  }
+
+  // Authentic Adobe Acrobat Dark Toolbar
+  .adobe-reader-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+    background: #2b2d30; // Dark charcoal Adobe theme
+    border-bottom: 1px solid #1a1c1e;
+    padding: 0 0.85rem;
+    color: #e2e8f0;
+    user-select: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    flex-shrink: 0;
+    gap: 0.75rem;
+
+    .toolbar-section {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 0;
+    }
+
+    // Left Branding & Doc Name
+    .toolbar-left {
+      flex: 0 1 auto;
+      max-width: 32%;
+
+      .adobe-logo-tag {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: #e5252a;
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 4px;
+        white-space: nowrap;
+
+        i {
+          font-size: 0.85rem;
+        }
+      }
+
+      .toolbar-doc-info {
+        display: flex;
+        align-items: baseline;
+        min-width: 0;
+        overflow: hidden;
+
+        .toolbar-doc-title {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #f8fafc;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .toolbar-file-ext {
+          font-size: 0.75rem;
+          color: #94a3b8;
+          margin-left: 2px;
+        }
+      }
+    }
+
+    // Center Navigation & Zoom Group
+    .toolbar-center {
+      flex: 1 1 auto;
+      justify-content: center;
+
+      .tool-group {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+
+      .adobe-page-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.8rem;
+        color: #cbd5e1;
+
+        .page-label {
+          display: none;
+          @media (min-width: 768px) {
+            display: inline;
+          }
+        }
+
+        .adobe-page-input {
+          width: 44px;
+          height: 26px;
+          background: #1e2022;
+          border: 1px solid #4a4d52;
+          color: #ffffff;
+          font-size: 0.8rem;
+          text-align: center;
+          border-radius: 4px;
+          outline: none;
+
+          &:focus {
+            border-color: #e5252a;
+          }
+        }
+
+        .page-total {
+          color: #94a3b8;
+          font-size: 0.78rem;
+        }
+      }
+
+      .adobe-zoom-select-wrapper {
+        .adobe-zoom-select {
+          height: 26px;
+          background: #1e2022;
+          border: 1px solid #4a4d52;
+          color: #f1f5f9;
+          font-size: 0.78rem;
+          padding: 0 0.4rem;
+          border-radius: 4px;
+          outline: none;
+          cursor: pointer;
+
+          &:focus {
+            border-color: #e5252a;
+          }
+
+          option {
+            background: #2b2d30;
+            color: #ffffff;
+          }
+        }
+      }
+    }
+
+    // Right Actions & Close
+    .toolbar-right {
+      flex: 0 0 auto;
+
+      .btn-close-adobe {
+        background: transparent;
+        color: #cbd5e1;
+
+        &:hover {
+          background: #e5252a !important;
+          color: #ffffff !important;
+        }
+      }
+    }
+
+    // Common Adobe Tool Buttons
+    .adobe-tool-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s ease, color 0.15s ease;
+
+      &:hover {
+        background: #3e4147;
+        color: #ffffff;
+      }
+
+      &:active {
+        background: #4e525a;
+      }
+
+      &.active {
+        background: rgba(229, 37, 42, 0.25);
+        color: #ff6b6b;
+      }
+
+      .rotation-badge {
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        font-size: 0.6rem;
+        font-weight: 700;
+        background: #e5252a;
+        color: #ffffff;
+        padding: 1px 3px;
+        border-radius: 6px;
+      }
+    }
+
+    .adobe-tool-divider {
+      width: 1px;
+      height: 20px;
+      background: #44474e;
+      margin: 0 0.35rem;
+    }
+  }
+
+  // Canvas Viewport Area
+  .adobe-reader-canvas {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 1.5rem 1rem 4rem 1rem;
+    background: #525659; // Dark gray Acrobat canvas background
+
+    // Center Paper Sheet
+    .adobe-document-sheet {
+      width: 820px;
+      min-height: 1100px;
+      background: #ffffff;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+      border-radius: 2px;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+
+      &.fit-width {
+        width: 95%;
+        max-width: 1200px;
+      }
+
+      .adobe-pdf-object,
+      .adobe-pdf-iframe {
+        width: 100%;
+        height: 85vh;
+        min-height: 800px;
+        border: none;
+        display: block;
+      }
+
+      .adobe-pdf-fallback {
+        padding: 3rem 1.5rem;
+        text-align: center;
+        background: #181b22;
+        color: #cbd5e1;
+
+        p {
+          margin-bottom: 1.25rem;
+          font-size: 0.95rem;
+        }
+      }
+    }
+  }
+
+  // Floating Acrobat HUD Pill
+  .adobe-floating-hud {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(30, 32, 36, 0.92);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 0.35rem 0.75rem;
+    border-radius: 30px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    z-index: 100;
+
+    .hud-btn {
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: #e2e8f0;
+      font-size: 0.8rem;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+      }
+    }
+
+    .hud-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      min-width: 36px;
+      text-align: center;
+    }
+
+    .hud-sep {
+      color: #64748b;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+@keyframes adobeModalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Mobile Adjustments
+@media (max-width: 768px) {
+  .wiki-pdf-card {
+    .wiki-pdf-card-header {
+      padding: 0.75rem 1rem;
+
+      .pdf-header-info {
+        width: 100%;
+      }
+
+      .pdf-header-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+
+    .wiki-pdf-preview-box {
+      height: 300px;
+    }
+  }
+
+  .adobe-reader-modal-backdrop {
+    .adobe-reader-toolbar {
+      padding: 0 0.5rem;
+
+      .toolbar-left {
+        max-width: 40%;
+      }
+
+      .tool-group.page-controls {
+        display: none;
+      }
+
+      .adobe-tool-divider {
+        display: none;
+      }
+    }
+
+    .adobe-reader-canvas {
+      padding: 0.5rem 0.25rem 3.5rem 0.25rem;
+
+      .adobe-document-sheet {
+        width: 100%;
+        min-height: 500px;
+
+        .adobe-pdf-object,
+        .adobe-pdf-iframe {
+          height: 70vh;
+          min-height: 500px;
+        }
+      }
+    }
+  }
+}

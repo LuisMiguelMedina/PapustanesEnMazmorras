@@ -1,0 +1,55 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 430 >>
+stream
+BT
+/F1 20 Tf
+50 720 Td
+(EXPEDIENTE CLASIFICADO: LORE TEMPORAL BTTF) Tj
+/F1 11 Tf
+0 -36 Td
+(Campaña: Back to the Future - Pasado y Futuro) Tj
+0 -20 Td
+(Sistema: D&D 5E Modificado / Foundry VTT Cronoviajeros) Tj
+0 -20 Td
+(Clasificación: Documento Oficial de la Base de Datos Wiki) Tj
+0 -36 Td
+(DIRECTRICES OPERATIVAS DE CRONOVIAJEROS:) Tj
+0 -22 Td
+(1. La preservación de las líneas de tiempo primarias es mandatoria.) Tj
+0 -18 Td
+(2. Cualquier alteración de eventos clave generará ramas de paradoja.) Tj
+0 -18 Td
+(3. El condensador de flujo requiere 1.21 Gigawatts de potencia estable.) Tj
+0 -18 Td
+(4. Toda bitácora debe ser archivada en el portal central de Papustanes.) Tj
+0 -36 Td
+(Papustanes en Mazmorras (c) 2026 - Registro de Campaña y Ficha Temporal) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000224 00000 n 
+0000000707 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+777
+%%EOF

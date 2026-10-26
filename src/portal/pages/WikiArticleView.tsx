@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react';
+import { FC, useState, useMemo, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { WikiContentRenderer } from '../components/wiki/WikiContentRenderer';
 import { WikiInfobox } from '../components/wiki/WikiInfobox';
@@ -6,6 +6,7 @@ import { WikiSidebar } from '../components/wiki/WikiSidebar';
 import { WikiHomeView } from '../components/wiki/WikiHomeView';
 import { WikiTableOfContents } from '../components/wiki/WikiTableOfContents';
 import { WikiAudioNarrator } from '../components/wiki/WikiAudioNarrator';
+import { WikiArticleEditorModal } from '../components/wiki/WikiArticleEditorModal';
 import { extractHeadings } from '../components/wiki/wikiHelpers';
 import { useWikiViewModel } from '../viewModels/useWikiViewModel';
 import './WikiArticleView.scss';
@@ -33,11 +34,20 @@ export const WikiArticleView: FC = () => {
 
   const isHomeView = !articleSlug || articleSlug === 'home';
 
+  const [customContent, setCustomContent] = useState<string | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    setCustomContent(null);
+  }, [articleSlug, campaignID]);
+
+  const effectiveContent = customContent ?? currentArticle?.ArticleContent ?? '';
+
   // Extract headings for Table of Contents
   const headings = useMemo(() => {
-    if (!currentArticle) return [];
-    return extractHeadings(currentArticle.ArticleContent);
-  }, [currentArticle]);
+    if (!effectiveContent) return [];
+    return extractHeadings(effectiveContent);
+  }, [effectiveContent]);
 
   // Determine previous and next articles for sequential reading
   const { prevArticle, nextArticle } = useMemo(() => {
@@ -128,12 +138,21 @@ export const WikiArticleView: FC = () => {
                   <i className="fas fa-folder-open" />
                   {currentArticle.ArticleCategories.join(', ') || 'General'}
                 </span>
+                <button
+                  type="button"
+                  className="btn-edit-article"
+                  onClick={() => setIsEditorOpen(true)}
+                  title="Editar este expediente en vivo e insertar lectores de PDF"
+                >
+                  <i className="fas fa-edit me-1 text-info" />
+                  <span>Editar / Insertar PDF</span>
+                </button>
               </div>
             </header>
 
             {/* Vocaloid Miku TTS Audio Narrator (Book Mode) */}
             <WikiAudioNarrator
-              content={currentArticle.ArticleContent}
+              content={effectiveContent}
               articleTitle={currentArticle.ArticleTitle}
             />
 
@@ -146,7 +165,7 @@ export const WikiArticleView: FC = () => {
               <WikiTableOfContents headings={headings} />
 
               <WikiContentRenderer
-                content={currentArticle.ArticleContent}
+                content={effectiveContent}
                 campaignID={campaignID}
                 categories={currentArticle.ArticleCategories}
                 resolveSlug={resolveCanonicalSlug}
@@ -214,6 +233,23 @@ export const WikiArticleView: FC = () => {
                 </div>
               )}
             </footer>
+
+            {/* In-Browser Wiki Article & PDF Editor Modal */}
+            {isEditorOpen && currentArticle && (
+              <WikiArticleEditorModal
+                isOpen={isEditorOpen}
+                onClose={() => setIsEditorOpen(false)}
+                campaignID={campaignID}
+                articleSlug={currentArticle.ArticleSlug}
+                initialContent={effectiveContent}
+                articleTitle={currentArticle.ArticleTitle}
+                categories={currentArticle.ArticleCategories}
+                resolveSlug={resolveCanonicalSlug}
+                onSaved={(newContent) => {
+                  setCustomContent(newContent);
+                }}
+              />
+            )}
           </>
         ) : (
           <div className="article-not-found">

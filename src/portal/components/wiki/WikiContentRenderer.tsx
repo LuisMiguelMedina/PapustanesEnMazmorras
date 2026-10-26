@@ -1,6 +1,7 @@
 import { FC, ReactNode, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { slugify } from './wikiHelpers';
+import { WikiPdfViewer } from './WikiPdfViewer';
 import './WikiContentRenderer.scss';
 
 export interface WikiContentRendererProps {
@@ -18,7 +19,8 @@ type RenderElement =
   | { type: 'ul'; items: string[] }
   | { type: 'ol'; items: string[] }
   | { type: 'blockquote'; text: string }
-  | { type: 'table'; headers: string[]; rows: string[][] };
+  | { type: 'table'; headers: string[]; rows: string[][] }
+  | { type: 'pdf'; url: string; title: string; caption?: string };
 
 export const WikiContentRenderer: FC<WikiContentRendererProps> = ({
   content,
@@ -203,6 +205,41 @@ export const WikiContentRenderer: FC<WikiContentRendererProps> = ({
       }
 
       flushList();
+
+      // PDF Embed Directives: {{PDF|url|title|caption}} or {{pdf|url|title}}
+      const pdfTemplateMatch = line.match(/^\{\{pdf\|(.*?)\}\}$/i);
+      if (pdfTemplateMatch) {
+        const parts = pdfTemplateMatch[1].split('|').map((s) => s.trim());
+        const pdfUrl = parts[0] || '';
+        const pdfTitle = parts[1] || '';
+        const pdfCaption = parts[2] || undefined;
+        if (pdfUrl) {
+          elements.push({ type: 'pdf', url: pdfUrl, title: pdfTitle, caption: pdfCaption });
+          continue;
+        }
+      }
+
+      // Custom bracket format: [pdf:url title]
+      const bracketPdfMatch = line.match(/^\[pdf:(\S+)(?:\s+(.*?))?\]$/i);
+      if (bracketPdfMatch) {
+        elements.push({
+          type: 'pdf',
+          url: bracketPdfMatch[1].trim(),
+          title: bracketPdfMatch[2]?.trim() || '',
+        });
+        continue;
+      }
+
+      // Standalone markdown link to .pdf: [Title](url.pdf)
+      const mdPdfMatch = line.match(/^\[(.*?)\]\(((?:https?:\/\/|\/|\w)[^)]*?\.pdf(?:\?[^)]*)?)\)$/i);
+      if (mdPdfMatch) {
+        elements.push({
+          type: 'pdf',
+          url: mdPdfMatch[2].trim(),
+          title: mdPdfMatch[1].trim(),
+        });
+        continue;
+      }
 
       // Headings
       if (line.startsWith('====') && line.endsWith('====')) {
@@ -406,6 +443,15 @@ export const WikiContentRenderer: FC<WikiContentRendererProps> = ({
                   </tbody>
                 </table>
               </div>
+            );
+          case 'pdf':
+            return (
+              <WikiPdfViewer
+                key={index}
+                url={el.url}
+                title={el.title}
+                caption={el.caption}
+              />
             );
           case 'p':
           default:

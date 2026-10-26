@@ -99,6 +99,31 @@
           gap: 6px;
         }
 
+        .btn-edit-article {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          margin-left: auto;
+          background: rgba(0, 242, 254, 0.12);
+          border: 1px solid rgba(0, 242, 254, 0.35);
+          color: #f1f5f9;
+          font-family: 'Space Grotesk', -apple-system, sans-serif;
+          font-size: 0.78rem;
+          font-weight: 600;
+          padding: 4px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: rgba(0, 242, 254, 0.25);
+            border-color: #00f2fe;
+            color: #00f2fe;
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
+            transform: translateY(-1px);
+          }
+        }
+
         i {
           color: #00cccc;
         }

@@ -1,0 +1,304 @@
+// Styles for Wiki Article Editor Modal & PDF Insert Panel
+
+.wiki-editor-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(10, 12, 18, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: fadeInModal 0.2s ease-out;
+
+  .wiki-editor-modal-dialog {
+    width: 100%;
+    max-width: 1100px;
+    height: 90vh;
+    background: #12161f;
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 242, 254, 0.1);
+    overflow: hidden;
+  }
+
+  // Header
+  .wiki-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: rgba(22, 27, 39, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    .editor-header-title {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+
+      .editor-icon-badge {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        background: rgba(0, 242, 254, 0.15);
+        color: #00f2fe;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        border: 1px solid rgba(0, 242, 254, 0.3);
+      }
+
+      h4 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #f8fafc;
+        font-family: 'Space Grotesk', sans-serif;
+      }
+
+      .editor-subtitle {
+        font-size: 0.78rem;
+        color: #94a3b8;
+      }
+    }
+
+    .editor-header-tabs {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .tab-btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #cbd5e1;
+        padding: 0.4rem 0.85rem;
+        border-radius: 6px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.08);
+          color: #ffffff;
+        }
+
+        &.active {
+          background: rgba(0, 242, 254, 0.2);
+          border-color: #00f2fe;
+          color: #00f2fe;
+        }
+      }
+
+      .btn-close-modal {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        font-size: 1.1rem;
+        padding: 0.4rem 0.6rem;
+        margin-left: 0.5rem;
+        cursor: pointer;
+        border-radius: 4px;
+
+        &:hover {
+          color: #ff6b6b;
+          background: rgba(255, 255, 255, 0.05);
+        }
+      }
+    }
+  }
+
+  // Toolbar
+  .wiki-editor-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    background: #181d29;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-wrap: wrap;
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .toolbar-separator {
+      width: 1px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.15);
+      margin: 0 0.4rem;
+    }
+
+    .btn-toolbar-pdf {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.35rem 0.75rem;
+      background: linear-gradient(135deg, #e5252a, #b3161a);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(229, 37, 42, 0.4);
+      transition: all 0.2s ease;
+
+      &:hover {
+        filter: brightness(1.15);
+        transform: translateY(-1px);
+      }
+    }
+
+    .tool-btn {
+      width: 30px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      font-size: 0.8rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+      }
+    }
+
+    .toolbar-feedback {
+      margin-left: auto;
+      font-size: 0.8rem;
+      color: #4ade80;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  // PDF Sub-panel
+  .pdf-insert-subpanel {
+    background: #1c2230;
+    border-bottom: 2px solid #e5252a;
+    padding: 1rem 1.5rem;
+    animation: fadeInSubpanel 0.2s ease-out;
+
+    .subpanel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.85rem;
+
+      .btn-close-subpanel {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+
+        &:hover {
+          color: #ffffff;
+        }
+      }
+    }
+
+    .preset-links-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+
+      .preset-label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+      }
+
+      .btn-preset {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #00f2fe;
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          background: rgba(0, 242, 254, 0.15);
+          border-color: #00f2fe;
+        }
+      }
+    }
+  }
+
+  // Body
+  .wiki-editor-body {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+
+    .wiki-editor-textarea {
+      width: 100%;
+      height: 100%;
+      background: #0f1219;
+      color: #f1f5f9;
+      border: none;
+      padding: 1.25rem;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+      white-space: pre-wrap;
+    }
+
+    .wiki-editor-preview-pane {
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      background: #0c0e14;
+    }
+  }
+
+  // Footer
+  .wiki-editor-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.5rem;
+    background: rgba(22, 27, 39, 0.95);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+@keyframes fadeInModal {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInSubpanel {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
