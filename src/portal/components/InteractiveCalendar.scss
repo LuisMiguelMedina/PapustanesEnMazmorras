@@ -95,7 +95,7 @@
         }
 
         .calendar-month-heading {
-          font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+          font-family: var(--font-fantasy-display);
           font-size: clamp(1.25rem, 2.2vw, 1.7rem);
           font-weight: 700;
           color: #ffedd5;
@@ -121,7 +121,7 @@
           color: #a8a29e;
           padding: 2px 9px;
           border-radius: 999px;
-          font-family: 'Cinzel', Georgia, serif;
+          font-family: var(--font-fantasy-display);
           font-size: 0.68rem;
           font-weight: 600;
           cursor: pointer;
@@ -358,7 +358,7 @@
           background: rgba(245, 158, 11, 0.15);
           border: 1px solid rgba(245, 158, 11, 0.5);
           color: #fcd34d;
-          font-family: 'Space Grotesk', sans-serif;
+          font-family: inherit;
           font-size: 0.75rem;
           font-weight: 800;
           letter-spacing: 0.15em;
@@ -369,7 +369,7 @@
       }
 
       .capture-month-title {
-        font-family: 'Cinzel Decorative', 'Space Grotesk', serif;
+        font-family: var(--font-fantasy-display);
         font-size: 2.4rem;
         font-weight: 900;
         letter-spacing: 0.08em;
@@ -407,7 +407,7 @@
         background: #fbf7f2;
         padding: 7px 2px;
         text-align: center;
-        font-family: 'Space Grotesk', sans-serif;
+        font-family: inherit;
         font-size: 0.74rem;
         font-weight: 800;
         color: #1c1917;
@@ -503,7 +503,7 @@
           width: 100%;
 
           .day-number {
-            font-family: 'Cinzel', Georgia, serif;
+            font-family: var(--font-fantasy-display);
             font-size: 0.78rem;
             font-weight: 700;
             color: #1c1917;
@@ -592,7 +592,7 @@
           }
 
           .pill-title-text {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: inherit;
             font-size: 0.65rem;
             font-weight: 800;
             overflow: hidden;
@@ -654,7 +654,7 @@
     .legend-indicator {
       display: inline-flex;
       align-items: center;
-      font-family: 'Space Grotesk', 'Manrope', sans-serif;
+      font-family: inherit;
       font-size: 0.68rem;
       font-weight: 800;
       color: #f59e0b;
@@ -712,7 +712,7 @@
     justify-content: center;
     padding: 2.5px 8px;
     border-radius: 999px;
-    font-family: 'Space Grotesk', 'Manrope', sans-serif;
+    font-family: inherit;
     font-size: 0.62rem;
     font-weight: 800;
     letter-spacing: 0.04em;
@@ -1031,7 +1031,7 @@
         border-bottom: 1px solid rgba(245, 158, 11, 0.2);
 
         h3 {
-          font-family: 'Space Grotesk', sans-serif;
+          font-family: inherit;
           font-size: 1.2rem;
           font-weight: 700;
           color: #ffffff;
@@ -1067,7 +1067,7 @@
           border: none;
           border-bottom: 2px solid transparent;
           color: #94a3b8;
-          font-family: 'Space Grotesk', sans-serif;
+          font-family: inherit;
           font-size: 0.85rem;
           font-weight: 700;
           padding: 12px 10px;
@@ -1204,7 +1204,7 @@
             padding: 4px 10px;
             font-size: 0.72rem;
             font-weight: 800;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: inherit;
             text-transform: uppercase;
             letter-spacing: 0.03em;
             cursor: pointer;
@@ -1371,7 +1371,7 @@
             }
 
             h4 {
-              font-family: 'Space Grotesk', sans-serif;
+              font-family: inherit;
               font-size: 1.05rem;
               font-weight: 700;
               color: #ffffff;
@@ -1447,7 +1447,7 @@
             padding: 4px 12px;
             font-size: 0.72rem;
             font-weight: 800;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: inherit;
             cursor: pointer;
             transition: all 0.15s;
 
@@ -1474,7 +1474,7 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 
             h5 {
-              font-family: 'Space Grotesk', sans-serif;
+              font-family: inherit;
               font-size: 0.95rem;
               color: #ffffff;
               margin: 0;
@@ -1583,7 +1583,7 @@
               padding: 5px 14px;
               border-radius: 999px;
               border: 1.5px solid #000;
-              font-family: 'Space Grotesk', sans-serif;
+              font-family: inherit;
               font-size: 0.85rem;
               font-weight: 800;
             }
@@ -1660,7 +1660,7 @@
           padding: 1rem 1.25rem;
 
           h5 {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: inherit;
             font-size: 0.88rem;
             font-weight: 700;
             color: #ffffff;

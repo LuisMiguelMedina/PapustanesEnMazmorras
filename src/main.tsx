@@ -52,7 +52,7 @@ const DonationRedirect: FC = () => {
       <i className="fas fa-mug-hot fa-3x mb-3" style={{ color: '#f59e0b' }} />
       <h3
         style={{
-          fontFamily: "'Cinzel', Georgia, serif",
+          fontFamily: "'MedievalSharp', Georgia, serif",
           color: '#ffffff',
           marginBottom: '0.5rem',
         }}

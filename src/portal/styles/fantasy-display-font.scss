@@ -1,6 +1,40 @@
-/* Títulos al estilo Darkest Dungeon (MedievalSharp ≈ gótico envejecido; OFL). */
+/* Títulos y UI al estilo Darkest Dungeon (MedievalSharp ≈ gótico envejecido; OFL). */
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
 
 :root {
   --font-fantasy-display: 'MedievalSharp', 'Cinzel Decorative', 'Cinzel', Georgia, serif;
+}
+
+/* Tipografía global del portal público fantasy */
+.scifi-portal-shell.fantasy-theme {
+  font-family: var(--font-fantasy-display);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: inherit;
+    font-weight: 400;
+  }
+
+  button,
+  input,
+  textarea,
+  select,
+  label {
+    font-family: inherit;
+  }
+
+  code,
+  pre,
+  kbd,
+  samp {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: 0;
+  }
 }
