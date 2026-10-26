@@ -677,7 +677,7 @@ export const InteractiveCalendar: FC = () => {
               title="Seguir el calendario completo en Google Calendar"
             >
               <i className="fab fa-google me-1" />
-              <span className="btn-label-desktop">Seguir Calendario Completo</span>
+              <span className="btn-label-desktop">Seguir Completo</span>
               <span className="btn-label-mobile">Seguir Todo</span>
             </button>
 
