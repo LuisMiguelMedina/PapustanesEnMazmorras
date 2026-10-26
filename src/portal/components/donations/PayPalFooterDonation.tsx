@@ -1,5 +1,6 @@
 import { FC, useState, useEffect, useRef, MouseEvent } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
+import { getDonationPagePath, getDonationShareUrl } from './DonationCopyLinkButton';
 import './PayPalFooterDonation.scss';
 
 export interface PayPalFooterDonationProps {
@@ -85,8 +86,6 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
   const [isCardCheckoutActive, setIsCardCheckoutActive] = useState<boolean>(false);
   const paypalEmbedRef = useRef<HTMLDivElement>(null);
 
-  const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
-  const cleanAliasPath = `${base}/donar`;
   const presets = [20, 50, 100, 200];
 
   // Base amount calculation (minimum minAmount)
@@ -162,8 +161,7 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
   };
 
   const handleCopyLink = () => {
-    const shareUrl = `${window.location.origin}${cleanAliasPath}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
+    navigator.clipboard.writeText(getDonationShareUrl()).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     });
@@ -464,21 +462,25 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                   </PayPalScriptProvider>
                 </div>
 
-                {/* Secondary Actions */}
-                <div className="modal-secondary-actions">
-                  <button
-                    type="button"
-                    className="btn-paypal-copy-link"
-                    onClick={handleCopyLink}
-                    title="Copiar enlace de apoyo al portapapeles"
-                  >
-                    <i className={`fas ${copied ? 'fa-check text-success' : 'fa-copy'} me-1`} />
-                    <span>{copied ? '¡Enlace Copiado!' : 'Copiar Enlace'}</span>
-                  </button>
+                {/* Secondary Actions (ocultar copiar enlace con formulario de tarjeta abierto; está en la topbar) */}
+                <div
+                  className={`modal-secondary-actions${isCardCheckoutActive ? ' is-card-checkout-active' : ''}`}
+                >
+                  {!isCardCheckoutActive && (
+                    <button
+                      type="button"
+                      className="btn-paypal-copy-link"
+                      onClick={handleCopyLink}
+                      title="Copiar enlace de apoyo al portapapeles"
+                    >
+                      <i className={`fas ${copied ? 'fa-check text-success' : 'fa-copy'} me-1`} />
+                      <span>{copied ? '¡Enlace Copiado!' : 'Copiar Enlace'}</span>
+                    </button>
+                  )}
 
                   {!hideKofi && (
                     <a
-                      href={cleanAliasPath}
+                      href={getDonationPagePath()}
                       onClick={handleOpenKofi}
                       target="_blank"
                       rel="noopener noreferrer"
