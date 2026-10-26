@@ -1,4 +1,4 @@
-import { FC, useState, useEffect, MouseEvent } from 'react';
+import { FC, useState, useEffect, useRef, MouseEvent } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import './PayPalFooterDonation.scss';
 
@@ -32,6 +32,12 @@ const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || DEFAULT_PAYPAL
  */
 const PAYPAL_SDK_LOCALE = 'es_MX';
 const PAYPAL_ORDER_LOCALE = 'es-MX';
+const PAYPAL_CARD_FORM_MIN_HEIGHT_PX = 110;
+
+const isCardFundingSource = (fundingSource: unknown): boolean => {
+  const value = String(fundingSource ?? '').toLowerCase();
+  return value === 'card' || value === 'credit';
+};
 
 const buildPayPalScriptOptions = () => {
   const options: {
@@ -74,6 +80,8 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
   const initialBase = parseFloat(suggestedAmount.replace(/[^0-9.]/g, '')) || minAmount;
   const [selectedAmount, setSelectedAmount] = useState<number>(initialBase);
   const [customAmountText, setCustomAmountText] = useState<string>('');
+  const [isCardCheckoutActive, setIsCardCheckoutActive] = useState<boolean>(false);
+  const paypalEmbedRef = useRef<HTMLDivElement>(null);
 
   const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
   const cleanAliasPath = `${base}/donar`;
@@ -112,6 +120,37 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isModalOpen]);
 
+  // Formulario de tarjeta: fondo claro + color-scheme light (texto PayPal legible).
+  useEffect(() => {
+    if (!isModalOpen) {
+      setIsCardCheckoutActive(false);
+      return;
+    }
+    const root = document.documentElement;
+    if (isCardCheckoutActive) {
+      root.classList.add('paypal-donate-card-flow');
+    } else {
+      root.classList.remove('paypal-donate-card-flow');
+    }
+    return () => root.classList.remove('paypal-donate-card-flow');
+  }, [isModalOpen, isCardCheckoutActive]);
+
+  useEffect(() => {
+    const node = paypalEmbedRef.current;
+    if (!isModalOpen || !node) return;
+
+    const syncExpanded = () => {
+      if (node.offsetHeight >= PAYPAL_CARD_FORM_MIN_HEIGHT_PX) {
+        setIsCardCheckoutActive(true);
+      }
+    };
+
+    syncExpanded();
+    const observer = new ResizeObserver(syncExpanded);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [isModalOpen, finalAmount]);
+
   const handleOpenKofi = (e?: MouseEvent) => {
     if (e) e.preventDefault();
     window.open(getTargetKofiUrl(), '_blank', 'noopener,noreferrer');
@@ -146,6 +185,7 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
   const resetModalState = () => {
     setIsSuccess(false);
     setPaymentError(null);
+    setIsCardCheckoutActive(false);
     setIsModalOpen(false);
   };
 
@@ -176,7 +216,7 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
       {/* Medieval Fantasy Informative Modal */}
       {isModalOpen && (
         <div
-          className="paypal-modal-backdrop"
+          className={`paypal-modal-backdrop${isCardCheckoutActive ? ' is-paypal-card-checkout' : ''}`}
           role="dialog"
           aria-modal="true"
           aria-labelledby="paypal-modal-title"
@@ -230,7 +270,9 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
               </div>
             ) : (
               /* Unified Scrollable Modal Body */
-              <div className="modal-body-content">
+              <div
+                className={`modal-body-content${isCardCheckoutActive ? ' is-paypal-card-checkout' : ''}`}
+              >
                 <p className="lead-paragraph">
                   Tus cafés sostienen la infraestructura del servidor en la nube de{' '}
                   <strong>Foundry VTT</strong>, el almacenamiento de fichas y el{' '}
@@ -332,7 +374,10 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                 </div>
 
                 {/* Live PayPal Buttons (Expands smoothly in scrollable container) */}
-                <div className="paypal-button-embed-wrapper">
+                <div
+                  ref={paypalEmbedRef}
+                  className={`paypal-button-embed-wrapper${isCardCheckoutActive ? ' is-card-checkout-expanded' : ''}`}
+                >
                   <PayPalScriptProvider options={buildPayPalScriptOptions()}>
                     <PayPalButtons
                       style={{
@@ -344,6 +389,12 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                         tagline: false,
                       }}
                       forceReRender={[finalAmount]}
+                      onClick={(data, actions) => {
+                        if (isCardFundingSource(data.fundingSource)) {
+                          setIsCardCheckoutActive(true);
+                        }
+                        return actions.resolve();
+                      }}
                       createOrder={(_data, actions) => {
                         return actions.order.create({
                           intent: 'CAPTURE',
@@ -403,6 +454,7 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                         setPaymentError('Hubo un inconveniente al cargar PayPal. Revisa tu conexión.');
                       }}
                       onCancel={() => {
+                        setIsCardCheckoutActive(false);
                         setPaymentError('Operación cancelada por el usuario.');
                       }}
                     />
