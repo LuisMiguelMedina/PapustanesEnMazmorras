@@ -161,10 +161,10 @@ export const WikiArticleEditorModal: FC<WikiArticleEditorModalProps> = ({
       const blockHtml = `
         <div class="visual-pdf-block" data-pdf-url="${cleanUrl}" data-pdf-title="${cleanTitle}" data-pdf-caption="${cleanCaption}" contenteditable="false">
           <div class="visual-pdf-header">
-            <span class="visual-adobe-badge"><i class="fas fa-file-pdf"></i> PDF</span>
+            <span class="visual-adobe-badge"><i class="fas fa-file-pdf"></i></span>
             <div class="visual-pdf-info">
               <strong>${cleanTitle}</strong>
-              <small>${cleanUrl} • Visor Adobe Acrobat Integrado</small>
+              <small>${cleanUrl}</small>
             </div>
             <span class="visual-pdf-action-pill"><i class="fas fa-expand me-1"></i> Lector Interactivo</span>
           </div>
@@ -421,7 +421,7 @@ export const WikiArticleEditorModal: FC<WikiArticleEditorModalProps> = ({
                     type="button"
                     className="tool-btn-action btn-pdf"
                     onClick={() => setShowPdfPrompt(!showPdfPrompt)}
-                    title="Insertar lector interactivo de PDF estilo Adobe Acrobat"
+                    title="Insertar lector interactivo de PDF"
                   >
                     <i className="fas fa-file-pdf me-1" />
                     <span>+ Lector PDF</span>

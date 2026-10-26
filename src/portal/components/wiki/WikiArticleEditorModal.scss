@@ -436,13 +436,12 @@
           .visual-adobe-badge {
             background: linear-gradient(135deg, #e5252a, #b3161a);
             color: #ffffff;
-            font-size: 0.72rem;
-            font-weight: 800;
-            padding: 4px 8px;
+            font-size: 0.92rem;
+            padding: 6px 9px;
             border-radius: 5px;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
           }
 
           .visual-pdf-info {

@@ -50,9 +50,12 @@ export const WikiPdfViewer: FC<WikiPdfViewerProps> = ({
   // Compute clean display title
   const displayTitle = title || resolvedUrl.split('/').pop()?.replace(/\.pdf$/i, '') || 'Documento PDF';
 
-  // Handle ESC and keyboard shortcuts when expanded
+  // Handle ESC and keyboard shortcuts when expanded, and lock body scroll
   useEffect(() => {
     if (!isExpanded) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -73,7 +76,10 @@ export const WikiPdfViewer: FC<WikiPdfViewerProps> = ({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isExpanded]);
 
   // Handle zoom presets
@@ -138,9 +144,8 @@ export const WikiPdfViewer: FC<WikiPdfViewerProps> = ({
         {/* Card Header */}
         <div className="wiki-pdf-card-header">
           <div className="pdf-header-info">
-            <div className="adobe-badge-square" title="Formato Adobe Acrobat PDF">
+            <div className="adobe-badge-square" title="Documento PDF">
               <i className="fas fa-file-pdf" />
-              <span>PDF</span>
             </div>
             <div className="pdf-header-meta">
               <h5 className="pdf-doc-title" title={displayTitle}>
@@ -148,8 +153,6 @@ export const WikiPdfViewer: FC<WikiPdfViewerProps> = ({
               </h5>
               <div className="pdf-doc-submeta">
                 <span className="badge-tag">Documento Clasificado</span>
-                <span className="separator">•</span>
-                <span className="source-hint">Visor Adobe Acrobat Integrado</span>
               </div>
             </div>
           </div>
@@ -159,7 +162,7 @@ export const WikiPdfViewer: FC<WikiPdfViewerProps> = ({
               type="button"
               className="btn-adobe-primary"
               onClick={() => setIsExpanded(true)}
-              title="Abrir en visor grande estilo Adobe Acrobat Reader"
+              title="Abrir en pantalla grande"
             >
               <i className="fas fa-expand me-1" />
               <span>Abrir en Grande</span>
@@ -190,11 +193,11 @@ export const WikiPdfViewer: FC<WikiPdfViewerProps> = ({
             onClick={() => setIsExpanded(true)}
             role="button"
             tabIndex={0}
-            title="Haga clic para abrir en el Visor Completo de Adobe Acrobat Reader"
+            title="Haga clic para abrir en el visor grande"
           >
             <div className="overlay-pill">
               <i className="fas fa-search-plus me-2" />
-              <span>Clic para abrir en Visor Adobe Completo</span>
+              <span>Clic para abrir en visor grande</span>
             </div>
           </div>
         </div>
@@ -210,15 +213,15 @@ export const WikiPdfViewer: FC<WikiPdfViewerProps> = ({
           className={`adobe-reader-modal-backdrop ${isFullscreen ? 'is-fullscreen' : ''}`}
           role="dialog"
           aria-modal="true"
-          aria-label={`Visor Adobe Acrobat: ${displayTitle}`}
+          aria-label={`Visor de PDF: ${displayTitle}`}
         >
-          {/* Adobe Reader Classic Dark Menu Bar */}
+          {/* Reader Toolbar */}
           <header className="adobe-reader-toolbar">
-            {/* Left: Adobe Brand & Title */}
+            {/* Left: Brand & Title */}
             <div className="toolbar-section toolbar-left">
-              <div className="adobe-logo-tag" title="Adobe Acrobat Reader UI">
+              <div className="adobe-logo-tag" title="Visor de PDF">
                 <i className="fas fa-file-pdf" />
-                <span>Adobe Reader</span>
+                <span>Lector PDF</span>
               </div>
               <div className="toolbar-doc-info" title={displayTitle}>
                 <span className="toolbar-doc-title">{displayTitle}</span>
@@ -388,21 +391,18 @@ export const WikiPdfViewer: FC<WikiPdfViewerProps> = ({
                 type="button"
                 className="adobe-tool-btn btn-close-adobe"
                 onClick={() => setIsExpanded(false)}
-                title="Cerrar visor Adobe Acrobat (Esc)"
+                title="Cerrar visor PDF (Esc)"
               >
                 <i className="fas fa-times" />
               </button>
             </div>
           </header>
 
-          {/* Main Viewer Canvas (Charcoal Adobe Gray Backdrop) */}
+          {/* Main Viewer Canvas */}
           <div className="adobe-reader-canvas">
             <div
               className={`adobe-document-sheet ${fitMode === 'width' ? 'fit-width' : ''}`}
-              style={{
-                transform: `scale(${zoomLevel / 100}) rotate(${rotation}deg)`,
-                transformOrigin: 'top center',
-              }}
+              style={rotation !== 0 ? { transform: `rotate(${rotation}deg)` } : undefined}
             >
               <object
                 data={iframeSrc}

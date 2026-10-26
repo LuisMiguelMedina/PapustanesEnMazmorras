@@ -127,7 +127,7 @@ export function markdownToVisualHtml(markdown: string): string {
       const title = parts[1] || 'Documento PDF';
       const caption = parts[2] || '';
       htmlParts.push(
-        `<div class="visual-pdf-block" data-pdf-url="${escapeHtml(url)}" data-pdf-title="${escapeHtml(title)}" data-pdf-caption="${escapeHtml(caption)}" contenteditable="false"><div class="visual-pdf-header"><span class="visual-adobe-badge"><i class="fas fa-file-pdf"></i> PDF</span><div class="visual-pdf-info"><strong>${escapeHtml(title)}</strong><small>${escapeHtml(url)} • Visor Adobe Acrobat Integrado</small></div><span class="visual-pdf-action-pill"><i class="fas fa-expand me-1"></i> Lector Interactivo</span></div>${caption ? `<div class="visual-pdf-caption">${escapeHtml(caption)}</div>` : ''}</div><p><br></p>`,
+        `<div class="visual-pdf-block" data-pdf-url="${escapeHtml(url)}" data-pdf-title="${escapeHtml(title)}" data-pdf-caption="${escapeHtml(caption)}" contenteditable="false"><div class="visual-pdf-header"><span class="visual-adobe-badge"><i class="fas fa-file-pdf"></i></span><div class="visual-pdf-info"><strong>${escapeHtml(title)}</strong><small>${escapeHtml(url)}</small></div><span class="visual-pdf-action-pill"><i class="fas fa-expand me-1"></i> Lector Interactivo</span></div>${caption ? `<div class="visual-pdf-caption">${escapeHtml(caption)}</div>` : ''}</div><p><br></p>`,
       );
       continue;
     }
@@ -141,7 +141,7 @@ export function markdownToVisualHtml(markdown: string): string {
       const url = bracketPdf[1].trim();
       const title = bracketPdf[2]?.trim() || 'Documento PDF';
       htmlParts.push(
-        `<div class="visual-pdf-block" data-pdf-url="${escapeHtml(url)}" data-pdf-title="${escapeHtml(title)}" data-pdf-caption="" contenteditable="false"><div class="visual-pdf-header"><span class="visual-adobe-badge"><i class="fas fa-file-pdf"></i> PDF</span><div class="visual-pdf-info"><strong>${escapeHtml(title)}</strong><small>${escapeHtml(url)} • Visor Adobe Acrobat Integrado</small></div><span class="visual-pdf-action-pill"><i class="fas fa-expand me-1"></i> Lector Interactivo</span></div></div><p><br></p>`,
+        `<div class="visual-pdf-block" data-pdf-url="${escapeHtml(url)}" data-pdf-title="${escapeHtml(title)}" data-pdf-caption="" contenteditable="false"><div class="visual-pdf-header"><span class="visual-adobe-badge"><i class="fas fa-file-pdf"></i></span><div class="visual-pdf-info"><strong>${escapeHtml(title)}</strong><small>${escapeHtml(url)}</small></div><span class="visual-pdf-action-pill"><i class="fas fa-expand me-1"></i> Lector Interactivo</span></div></div><p><br></p>`,
       );
       continue;
     }
