@@ -1,4 +1,5 @@
 import { FC, useState, useEffect, MouseEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { getDonationPagePath, getDonationShareUrl } from './DonationCopyLinkButton';
 import './PayPalFooterDonation.scss';
@@ -175,48 +176,16 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
 
   const isTopbarTrigger = triggerPlacement === 'topbar';
 
-  return (
-    <div
-      className={`paypal-footer-donation-wrapper${isTopbarTrigger ? ' paypal-footer-donation-wrapper--topbar' : ''}`}
-    >
-      {/* Footer Interactive Trigger Button */}
-      <button
-        type="button"
-        className={isTopbarTrigger ? 'btn-donate-quick' : 'btn-paypal-fantasy-trigger'}
-        onClick={() => {
-          setIsSuccess(false);
-          setPaymentError(null);
-          setIsModalOpen(true);
-        }}
-        title={
-          isTopbarTrigger
-            ? `Invitar un café para apoyar a ${communityName} y su servidor`
-            : `Invitar un café para apoyar a ${communityName} y su servidor — ${sublabel}`
-        }
-        aria-haspopup="dialog"
-        aria-expanded={isModalOpen}
-      >
-        {isTopbarTrigger ? (
-          <>
-            <i className="fas fa-mug-hot donate-fantasy-icon" aria-hidden="true" />
-            <span>{label}</span>
-          </>
-        ) : (
-          <>
-            <span className="paypal-icon-badge">
-              <i className="fas fa-mug-hot" />
-            </span>
-            <div className="paypal-label-stack">
-              <span className="paypal-primary-text">{label}</span>
-              <span className="paypal-subtext">{sublabel}</span>
-            </div>
-          </>
-        )}
-      </button>
+  const openModal = () => {
+    setIsSuccess(false);
+    setPaymentError(null);
+    setIsModalOpen(true);
+  };
 
-      {/* Medieval Fantasy Informative Modal */}
-      {isModalOpen && (
-        <div
+  const modal =
+    isModalOpen &&
+    createPortal(
+      <div
           className="paypal-modal-backdrop"
           role="dialog"
           aria-modal="true"
@@ -487,8 +456,43 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
               </div>
             )}
           </div>
-        </div>
+        </div>,
+      document.body,
+    );
+
+  return (
+    <div className="paypal-footer-donation-wrapper">
+      {isTopbarTrigger ? (
+        <button
+          type="button"
+          className="btn-vtt-quick btn-vtt-quick--donate"
+          onClick={openModal}
+          title={`Invitar un café para apoyar a ${communityName} y su servidor`}
+          aria-haspopup="dialog"
+          aria-expanded={isModalOpen}
+        >
+          <i className="fas fa-mug-hot vtt-fantasy-icon" aria-hidden="true" />
+          <span>{label}</span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="btn-paypal-fantasy-trigger"
+          onClick={openModal}
+          title={`Invitar un café para apoyar a ${communityName} y su servidor — ${sublabel}`}
+          aria-haspopup="dialog"
+          aria-expanded={isModalOpen}
+        >
+          <span className="paypal-icon-badge">
+            <i className="fas fa-mug-hot" />
+          </span>
+          <div className="paypal-label-stack">
+            <span className="paypal-primary-text">{label}</span>
+            <span className="paypal-subtext">{sublabel}</span>
+          </div>
+        </button>
       )}
+      {modal}
     </div>
   );
 };

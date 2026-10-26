@@ -80,9 +80,10 @@
       }
     }
   }
+}
 
-  /* ---------------- MODAL BACKDROP ---------------- */
-  .paypal-modal-backdrop {
+/* Modal en portal (body): no puede vivir bajo la topbar (backdrop-filter rompe fixed) */
+.paypal-modal-backdrop {
     color-scheme: light;
     position: fixed;
     inset: 0;
@@ -620,7 +621,6 @@
       }
     }
   }
-}
 
 /* Overlays de PayPal (dirección de facturación) montados fuera del modal */
 html.paypal-donate-modal-open {
