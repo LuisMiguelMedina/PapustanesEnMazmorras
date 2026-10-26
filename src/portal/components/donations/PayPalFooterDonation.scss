@@ -83,6 +83,8 @@
 
   /* ---------------- MODAL BACKDROP ---------------- */
   .paypal-modal-backdrop {
+    /* Evita que el formulario de tarjeta de PayPal use modo oscuro (texto ilegible). */
+    color-scheme: none;
     position: fixed;
     inset: 0;
     z-index: 100000;
@@ -556,6 +558,24 @@
         /* Allow seamless expansion when Debit/Credit card form renders */
         iframe {
           z-index: 10 !important;
+        }
+
+        /*
+         * Tarjeta de débito/crédito (inline): PayPal pinta títulos en gris oscuro.
+         * Sobre el modal oscuro no se leen; panel claro con acento ámbar del modal.
+         */
+        &.paypal-debit-card-surface {
+          color-scheme: none;
+          background: linear-gradient(165deg, #fffbeb 0%, #fef3c7 48%, #fff7ed 100%);
+          border: 1px solid rgba(245, 158, 11, 0.55);
+          border-radius: 8px;
+          padding: 0.85rem 0.75rem 0.95rem;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 4px 14px rgba(0, 0, 0, 0.35);
+
+          /* Contenedores que PayPal inyecta al expandir el formulario */
+          :is([id*='zoid'], [class*='paypal-button'], [data-funding-source]) {
+            color-scheme: none;
+          }
         }
       }
 
