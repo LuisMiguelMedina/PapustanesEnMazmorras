@@ -1,5 +1,6 @@
-import { FC, useState, useEffect, useMemo } from 'react';
+import { FC, useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import html2canvas from 'html2canvas';
 import {
   CalendarEvent,
   CalendarEventOccurrence,
@@ -57,6 +58,10 @@ export const InteractiveCalendar: FC = () => {
   const [followTab, setFollowTab] = useState<FollowTab>('FULL');
   const [selectedFollowDm, setSelectedFollowDm] = useState<string>('PAC');
   const [selectedFollowEventId, setSelectedFollowEventId] = useState<string>('');
+
+  // Calendar capture state and DOM ref
+  const calendarCaptureRef = useRef<HTMLDivElement>(null);
+  const [copyStatus, setCopyStatus] = useState<'IDLE' | 'COPYING' | 'COPIED' | 'DOWNLOADED'>('IDLE');
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
   // Form state
@@ -429,9 +434,9 @@ export const InteractiveCalendar: FC = () => {
     }
   };
 
-  // Helper to trigger file download
-  const downloadBlob = (content: string, filename: string) => {
-    const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
+  // Helper to trigger file download (supports string content or binary Blob)
+  const downloadBlob = (content: string | Blob, filename: string) => {
+    const blob = typeof content === 'string' ? new Blob([content], { type: 'text/calendar;charset=utf-8' }) : content;
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -439,7 +444,78 @@ export const InteractiveCalendar: FC = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  // Copy Calendar Image to Clipboard (or fallback download) with Month and Year included
+  const handleCopyCalendar = async () => {
+    if (!calendarCaptureRef.current || copyStatus === 'COPYING') return;
+
+    try {
+      setCopyStatus('COPYING');
+
+      const element = calendarCaptureRef.current;
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: '#0c0e14',
+        useCORS: true,
+        logging: false,
+        windowWidth: 1200,
+        onclone: (_clonedDoc, clonedElement) => {
+          clonedElement.style.width = '960px';
+          clonedElement.style.maxWidth = '960px';
+          clonedElement.style.padding = '22px 24px 26px';
+          clonedElement.style.background = '#0c0e14';
+          clonedElement.style.borderRadius = '16px';
+          clonedElement.style.boxSizing = 'border-box';
+
+          // Show the header containing the Month and Year prominently
+          const header = clonedElement.querySelector('.capture-header') as HTMLElement | null;
+          if (header) {
+            header.style.display = 'flex';
+          }
+
+          // Hide interactive add buttons and debug buttons from the output image
+          const quickAddBtns = clonedElement.querySelectorAll('.btn-cell-quick-add');
+          quickAddBtns.forEach((btn) => {
+            (btn as HTMLElement).style.display = 'none';
+          });
+
+          const debugElements = clonedElement.querySelectorAll('.btn-debug-manage-tags, .debug-tag-icon');
+          debugElements.forEach((el) => {
+            (el as HTMLElement).style.display = 'none';
+          });
+        },
+      });
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          throw new Error('No se pudo generar la imagen del calendario.');
+        }
+
+        const fileName = `calendario-${monthTitle.toLowerCase().replace(/\s+/g, '-')}.png`;
+
+        if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+          try {
+            const item = new ClipboardItem({ 'image/png': blob });
+            await navigator.clipboard.write([item]);
+            setCopyStatus('COPIED');
+            setTimeout(() => setCopyStatus('IDLE'), 3000);
+            return;
+          } catch (clipErr) {
+            console.warn('Clipboard write failed, downloading image instead:', clipErr);
+          }
+        }
+
+        downloadBlob(blob, fileName);
+        setCopyStatus('DOWNLOADED');
+        setTimeout(() => setCopyStatus('IDLE'), 3500);
+      }, 'image/png');
+    } catch (error) {
+      console.error('Error al capturar calendario:', error);
+      setCopyStatus('IDLE');
+      alert('No se pudo copiar la imagen del calendario. Por favor intenta de nuevo.');
+    }
   };
 
   // Download full calendar .ICS
@@ -562,6 +638,40 @@ export const InteractiveCalendar: FC = () => {
 
             <button
               type="button"
+              className={`btn-calendar-copy ${copyStatus === 'COPIED' ? 'copied' : ''}`}
+              onClick={handleCopyCalendar}
+              disabled={copyStatus === 'COPYING'}
+              title="Copiar imagen del calendario al portapapeles con el mes y año incluidos"
+            >
+              {copyStatus === 'COPYING' ? (
+                <>
+                  <i className="fas fa-spinner fa-spin me-1" />
+                  <span className="btn-label-desktop">Copiando...</span>
+                  <span className="btn-label-mobile">Copiando</span>
+                </>
+              ) : copyStatus === 'COPIED' ? (
+                <>
+                  <i className="fas fa-check me-1" />
+                  <span className="btn-label-desktop">¡Calendario Copiado!</span>
+                  <span className="btn-label-mobile">¡Copiado!</span>
+                </>
+              ) : copyStatus === 'DOWNLOADED' ? (
+                <>
+                  <i className="fas fa-download me-1" />
+                  <span className="btn-label-desktop">¡Imagen Guardada!</span>
+                  <span className="btn-label-mobile">Guardado</span>
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-camera me-1" />
+                  <span className="btn-label-desktop">Copiar Calendario</span>
+                  <span className="btn-label-mobile">Copiar</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
               className="btn-calendar-follow btn-follow-full"
               onClick={() => handleOpenFollowModal('FULL')}
               title="Seguir el calendario completo en Google Calendar"
@@ -596,8 +706,19 @@ export const InteractiveCalendar: FC = () => {
         </div>
       </div>
 
-      {/* ---------------- 2. CALENDAR MONTH GRID ---------------- */}
-      <div className="calendar-grid-card">
+      {/* ---------------- 2. CALENDAR MONTH GRID & CAPTURE AREA ---------------- */}
+      <div ref={calendarCaptureRef} className="calendar-capture-area">
+        {/* Header included in the captured image with Month and Year */}
+        <div className="capture-header">
+          <div className="capture-brand">
+            <span className="brand-badge">PAPUSTANES EN MAZMORRAS</span>
+          </div>
+          <h2 className="capture-month-title">{monthTitle}</h2>
+          <span className="capture-subtitle">CALENDARIO DE SESIONES Y EVENTOS</span>
+        </div>
+
+        {/* Calendar Month Grid */}
+        <div className="calendar-grid-card">
         {/* Days of the week header */}
         <div className="calendar-weekdays-row">
           {weekdays.map((day) => (
@@ -732,6 +853,7 @@ export const InteractiveCalendar: FC = () => {
           </button>
         )}
       </div>
+    </div>
 
       {/* ---------------- 4. CREATE / EDIT EVENT MODAL ---------------- */}
       {showEventModal && (

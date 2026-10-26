@@ -172,10 +172,17 @@
         }
 
         .btn-calendar-add {
-          grid-column: 1 / -1;
+          grid-column: 1 / 2;
           justify-content: center;
-          padding: 8px 12px;
-          font-size: 0.8rem;
+          padding: 8px 10px;
+          font-size: 0.78rem;
+        }
+
+        .btn-calendar-copy {
+          grid-column: 2 / 3;
+          justify-content: center;
+          padding: 8px 10px;
+          font-size: 0.78rem;
         }
 
         .btn-calendar-follow {
@@ -209,6 +216,43 @@
         &:hover {
           transform: translateY(-1px);
           box-shadow: 0 0 20px rgba(234, 88, 12, 0.7), 0 0 30px rgba(185, 28, 28, 0.4);
+        }
+      }
+
+      .btn-calendar-copy {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+        color: #fcd34d;
+        border: 1px solid rgba(245, 158, 11, 0.45);
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.74rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+
+        &:hover:not(:disabled) {
+          transform: translateY(-1px);
+          background: rgba(245, 158, 11, 0.2);
+          color: #ffffff;
+          border-color: #f59e0b;
+          box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+        }
+
+        &:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+        }
+
+        &.copied {
+          border-color: #22c55e;
+          color: #4ade80;
+          background: rgba(34, 197, 94, 0.2);
+          box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
         }
       }
 
@@ -264,8 +308,63 @@
     }
   }
 
-  /* ---------------- 2. CALENDAR MONTH GRID ---------------- */
-  .calendar-grid-card {
+  /* ---------------- 2. CAPTURE AREA & CALENDAR GRID ---------------- */
+  .calendar-capture-area {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .capture-header {
+      display: none; // Hidden in live web view; made visible via onclone for clipboard image
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 2px solid rgba(245, 158, 11, 0.4);
+
+      .capture-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-bottom: 0.35rem;
+
+        .brand-badge {
+          background: rgba(245, 158, 11, 0.15);
+          border: 1px solid rgba(245, 158, 11, 0.5);
+          color: #fcd34d;
+          font-family: 'Space Grotesk', sans-serif;
+          font-size: 0.75rem;
+          font-weight: 800;
+          letter-spacing: 0.15em;
+          padding: 3px 10px;
+          border-radius: 999px;
+          text-transform: uppercase;
+        }
+      }
+
+      .capture-month-title {
+        font-family: 'Cinzel Decorative', 'Space Grotesk', serif;
+        font-size: 2.4rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        color: #ffffff;
+        text-transform: uppercase;
+        margin: 0.2rem 0;
+        text-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
+      }
+
+      .capture-subtitle {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.12em;
+        color: #94a3b8;
+        text-transform: uppercase;
+      }
+    }
+
+    .calendar-grid-card {
     background: #ffffff;
     border: 2px solid #1c1917;
     border-radius: 10px;
@@ -581,6 +680,7 @@
       }
     }
   }
+}
 
   .legend-pill {
     display: inline-flex;
