@@ -1,4 +1,4 @@
-import { FC, useState, useEffect, MouseEvent } from 'react';
+import { FC, useState, useEffect, useMemo, MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { getDonationPagePath, getDonationShareUrl } from './DonationCopyLinkButton';
@@ -36,38 +36,6 @@ const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || DEFAULT_PAYPAL
  */
 const PAYPAL_SDK_LOCALE = 'es_MX';
 const PAYPAL_ORDER_LOCALE = 'es-MX';
-/** Telemetría/logger de PayPal bloqueada por extensiones; no suele afectar el cobro. */
-const isBenignPayPalSdkNoise = (err: unknown): boolean => {
-  const raw =
-    typeof err === 'string'
-      ? err
-      : err instanceof Error
-        ? err.message
-        : err && typeof err === 'object'
-          ? JSON.stringify(err)
-          : '';
-  return /logger|xoplatform|ERR_BLOCKED|allowpaymentrequest|allow attribute/i.test(raw);
-};
-
-const buildPayPalScriptOptions = () => {
-  const options: {
-    clientId: string;
-    currency: string;
-    intent: string;
-    locale: string;
-    buyerCountry?: string;
-  } = {
-    clientId: PAYPAL_CLIENT_ID,
-    currency: 'MXN',
-    intent: 'capture',
-    locale: PAYPAL_SDK_LOCALE,
-  };
-  // PayPal solo permite buyer-country en sandbox; ayuda a probar CP y móvil MX en local.
-  if (import.meta.env.DEV) {
-    options.buyerCountry = 'MX';
-  }
-  return options;
-};
 
 export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
   communityName = 'Papustanes en Mazmorras',
@@ -127,16 +95,29 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isModalOpen]);
 
-  // PayPal (botones + tarjeta) requiere color-scheme claro en todo el modal.
+  const paypalScriptOptions = useMemo(
+    () => ({
+      clientId: PAYPAL_CLIENT_ID,
+      currency: 'MXN',
+      intent: 'capture',
+      locale: PAYPAL_SDK_LOCALE,
+    }),
+    [],
+  );
+
+  // Cargar el SDK solo con el modal abierto (menos trabajo en segundo plano al navegar).
+  const [loadPayPalWidgets, setLoadPayPalWidgets] = useState(false);
   useEffect(() => {
-    const root = document.documentElement;
-    if (!isModalOpen) {
-      root.classList.remove('paypal-donate-modal-open');
+    if (!isModalOpen || isSuccess) {
+      setLoadPayPalWidgets(false);
       return;
     }
-    root.classList.add('paypal-donate-modal-open');
-    return () => root.classList.remove('paypal-donate-modal-open');
-  }, [isModalOpen]);
+    const id = window.requestAnimationFrame(() => setLoadPayPalWidgets(true));
+    return () => {
+      window.cancelAnimationFrame(id);
+      setLoadPayPalWidgets(false);
+    };
+  }, [isModalOpen, isSuccess]);
 
   const handleOpenKofi = (e?: MouseEvent) => {
     if (e) e.preventDefault();
@@ -258,9 +239,7 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                       Puedes invitar desde 1 café (mínimo de <strong>${minAmount} MXN</strong>).
                       El pago se procesa al instante como contenido y soporte digital con saldo de{' '}
                       <strong>PayPal</strong> o directamente con tu{' '}
-                      <strong>tarjeta de débito/crédito</strong>. Si usas bloqueador de anuncios,
-                      puede aparecer en consola un aviso de PayPal (<em>logger</em>); no significa que
-                      la página esté rota.
+                      <strong>tarjeta de débito/crédito</strong>.
                     </p>
                   </div>
                 </div>
@@ -345,16 +324,9 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
 
                 {/* Live PayPal Buttons (Expands smoothly in scrollable container) */}
                 <div className="paypal-button-embed-wrapper">
-                  <PayPalScriptProvider options={buildPayPalScriptOptions()}>
+                  {loadPayPalWidgets ? (
+                  <PayPalScriptProvider options={paypalScriptOptions}>
                     <PayPalButtons
-                      style={{
-                        layout: 'vertical',
-                        color: 'gold',
-                        shape: 'rect',
-                        label: 'pay',
-                        height: 44,
-                        tagline: false,
-                      }}
                       forceReRender={[finalAmount]}
                       createOrder={(_data, actions) => {
                         return actions.order.create({
@@ -411,19 +383,17 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                         }
                       }}
                       onError={(err) => {
-                        if (isBenignPayPalSdkNoise(err)) {
-                          return;
-                        }
                         console.error('PayPal Buttons error:', err);
-                        setPaymentError(
-                          'No se pudo cargar el botón de PayPal. Prueba sin bloqueador de anuncios o recarga la página.',
-                        );
+                        setPaymentError('Hubo un inconveniente al cargar PayPal. Revisa tu conexión.');
                       }}
                       onCancel={() => {
                         setPaymentError(null);
                       }}
                     />
                   </PayPalScriptProvider>
+                  ) : (
+                    <p className="paypal-embed-loading text-muted small mb-0">Cargando opciones de pago…</p>
+                  )}
                 </div>
 
                 {/* Secondary Actions (ocultar copiar enlace con formulario de tarjeta abierto; está en la topbar) */}
