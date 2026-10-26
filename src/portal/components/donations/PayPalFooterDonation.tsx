@@ -26,6 +26,29 @@ const DEFAULT_PAYPAL_CLIENT_ID =
   'BAA-aiHBfRBEkWGGh8umZAuwjJwpsUA104wjv6EJFoaDieVF93wwOrNXdSZjvP__hya21sARA2sWhVjUHg';
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || DEFAULT_PAYPAL_CLIENT_ID;
 
+/** Español (México): etiquetas, código postal y prefijo +52 en tarjeta de débito/crédito. */
+const PAYPAL_LOCALE = 'es-MX';
+
+const buildPayPalScriptOptions = () => {
+  const options: {
+    clientId: string;
+    currency: string;
+    intent: string;
+    locale: string;
+    buyerCountry?: string;
+  } = {
+    clientId: PAYPAL_CLIENT_ID,
+    currency: 'MXN',
+    intent: 'capture',
+    locale: PAYPAL_LOCALE,
+  };
+  // PayPal solo permite buyer-country en sandbox; ayuda a probar CP y móvil MX en local.
+  if (import.meta.env.DEV) {
+    options.buyerCountry = 'MX';
+  }
+  return options;
+};
+
 export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
   communityName = 'Papustanes en Mazmorras',
   label = 'Invitar un Café',
@@ -305,14 +328,8 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                 </div>
 
                 {/* Live PayPal Buttons (Expands smoothly in scrollable container) */}
-                <div className="paypal-button-embed-wrapper">
-                  <PayPalScriptProvider
-                    options={{
-                      clientId: PAYPAL_CLIENT_ID,
-                      currency: 'MXN',
-                      intent: 'capture',
-                    }}
-                  >
+                <div className="paypal-button-embed-wrapper paypal-debit-card-surface">
+                  <PayPalScriptProvider options={buildPayPalScriptOptions()}>
                     <PayPalButtons
                       style={{
                         layout: 'vertical',
@@ -328,6 +345,7 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                           intent: 'CAPTURE',
                           application_context: {
                             brand_name: communityName,
+                            locale: PAYPAL_LOCALE,
                             landing_page: 'NO_PREFERENCE',
                             shipping_preference: 'NO_SHIPPING',
                             user_action: 'PAY_NOW',
