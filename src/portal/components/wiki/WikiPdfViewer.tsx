@@ -1,4 +1,4 @@
-import { FC, useState, useEffect, useRef, useCallback } from 'react';
+import { FC, useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import './WikiPdfViewer.scss';
 
 export interface WikiPdfViewerProps {
@@ -134,8 +134,10 @@ export const WikiPdfViewer: FC<WikiPdfViewerProps> = ({
     }
   };
 
-  // Build iframe src URL with PDF params
-  const iframeSrc = `${resolvedUrl}#page=${page}&zoom=${zoomLevel}&toolbar=0&navpanes=0`;
+  // Build iframe src URL with PDF open parameters
+  const iframeSrc = useMemo(() => {
+    return `${resolvedUrl}#page=${page}&toolbar=0&navpanes=0&view=${fitMode === 'width' ? 'FitH' : 'Fit'}`;
+  }, [resolvedUrl, page, fitMode]);
 
   return (
     <div className="wiki-pdf-component-wrapper" data-widget="wiki-pdf-reader">
@@ -401,34 +403,19 @@ export const WikiPdfViewer: FC<WikiPdfViewerProps> = ({
           {/* Main Viewer Canvas */}
           <div className="adobe-reader-canvas">
             <div
-              className={`adobe-document-sheet ${fitMode === 'width' ? 'fit-width' : ''}`}
-              style={rotation !== 0 ? { transform: `rotate(${rotation}deg)` } : undefined}
+              className={`adobe-document-sheet ${
+                fitMode === 'width' ? 'fit-width' : fitMode === 'page' ? 'fit-page' : 'fit-custom'
+              }`}
+              style={{
+                ...(rotation !== 0 ? { transform: `rotate(${rotation}deg)` } : {}),
+                ...(fitMode === 'custom' ? { maxWidth: `${Math.round(8.6 * zoomLevel)}px` } : {}),
+              }}
             >
-              <object
-                data={iframeSrc}
-                type="application/pdf"
-                className="adobe-pdf-object"
+              <iframe
+                src={iframeSrc}
+                className="adobe-pdf-iframe"
                 title={displayTitle}
-              >
-                <iframe
-                  src={iframeSrc}
-                  className="adobe-pdf-iframe"
-                  title={displayTitle}
-                >
-                  <div className="adobe-pdf-fallback">
-                    <p>Su navegador no admite la previsualización directa de archivos PDF.</p>
-                    <a
-                      href={resolvedUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-adobe-primary"
-                    >
-                      <i className="fas fa-external-link-alt me-1" />
-                      Abrir PDF en pestaña independiente
-                    </a>
-                  </div>
-                </iframe>
-              </object>
+              />
             </div>
           </div>
 
