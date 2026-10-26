@@ -3,7 +3,6 @@ import { Link, Outlet } from 'react-router-dom';
 import { ref, onValue } from 'firebase/database';
 import { db } from '../firebase';
 import { PayPalFooterDonation } from '../components/donations/PayPalFooterDonation';
-import { DonationCopyLinkButton } from '../components/donations/DonationCopyLinkButton';
 import './SciFiLayout.scss';
 
 const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
@@ -58,7 +57,15 @@ export const SciFiLayout: FC = () => {
           </Link>
 
           <div className="topbar-actions">
-            <DonationCopyLinkButton className="btn-donation-copy-link" />
+            <PayPalFooterDonation
+              triggerPlacement="topbar"
+              communityName="Papustanes en Mazmorras"
+              label="Invitar un Café"
+              sublabel="Apoya el servidor Foundry VTT & mantenimiento"
+              suggestedAmount="$20 MXN"
+              minAmount={20}
+              hideKofi={true}
+            />
             <a
               href="http://practically-marine.tun.ply.gg:61342"
               target="_blank"
@@ -81,16 +88,6 @@ export const SciFiLayout: FC = () => {
       {/* Medieval Fantasy Global Footer */}
       <footer className="scifi-footer fantasy-footer">
         <div className="footer-inner">
-          <div className="footer-donation-block">
-            <PayPalFooterDonation
-              communityName="Papustanes en Mazmorras"
-              label="Invitar un Café"
-              sublabel="Apoya el servidor Foundry VTT & mantenimiento de la página"
-              suggestedAmount="$20 MXN"
-              minAmount={20}
-              hideKofi={true}
-            />
-          </div>
           <div className="footer-bottom">
             <span>© 2020-2026 PAPUSTANES EN MAZMORRAS</span>
           </div>
