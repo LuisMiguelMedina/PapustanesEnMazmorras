@@ -229,6 +229,135 @@
         }
       }
 
+      /* Amount Selector Section */
+      .donation-amount-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        background: rgba(28, 25, 23, 0.45);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        border-radius: 8px;
+        padding: 0.85rem 1rem;
+
+        .amount-section-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+
+          .amount-section-label {
+            font-family: 'Cinzel', Georgia, serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #fde68a;
+            letter-spacing: 0.04em;
+          }
+
+          .amount-min-badge {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            color: #fef08a;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 600;
+          }
+        }
+
+        .amount-chips-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 0.5rem;
+
+          @media (max-width: 480px) {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          .amount-chip-btn {
+            background: rgba(41, 37, 36, 0.8);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-family: 'Space Grotesk', -apple-system, sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 0.45rem 0.6rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+
+            &:hover {
+              border-color: rgba(245, 158, 11, 0.6);
+              color: #fde68a;
+              background: rgba(245, 158, 11, 0.15);
+            }
+
+            &.active {
+              background: linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(217, 119, 6, 0.2) 100%);
+              border-color: #f59e0b;
+              color: #fef08a;
+              box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+            }
+          }
+        }
+
+        .custom-amount-wrapper {
+          display: flex;
+          align-items: center;
+          position: relative;
+          background: rgba(12, 10, 9, 0.7);
+          border: 1px solid rgba(245, 158, 11, 0.25);
+          border-radius: 6px;
+          padding: 0.35rem 0.75rem;
+          transition: border-color 0.2s ease;
+
+          &:focus-within {
+            border-color: #f59e0b;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+          }
+
+          .currency-prefix {
+            color: #f59e0b;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-right: 0.4rem;
+          }
+
+          .currency-suffix {
+            color: #94a3b8;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-left: 0.4rem;
+          }
+
+          .custom-amount-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #f8fafc;
+            font-family: 'Space Grotesk', -apple-system, sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            width: 100%;
+
+            &::placeholder {
+              color: #64748b;
+              font-size: 0.8rem;
+            }
+          }
+        }
+
+        .amount-warning-text {
+          font-size: 0.75rem;
+          color: #f87171;
+          display: flex;
+          align-items: center;
+          margin-top: -0.2rem;
+        }
+      }
+
       /* PayPal Fee Support Option (Checkbox) */
       .paypal-fee-support-row {
         background: rgba(28, 25, 23, 0.65);
@@ -340,6 +469,25 @@
           &:hover {
             background: rgba(255, 255, 255, 0.15);
             border-color: rgba(245, 158, 11, 0.4);
+            color: #fde68a;
+          }
+        }
+      }
+
+      /* Direct link note */
+      .modal-footer-direct-note {
+        text-align: center;
+        font-size: 0.75rem;
+        color: #94a3b8;
+        padding-top: 0.25rem;
+
+        a {
+          color: #f59e0b;
+          text-decoration: none;
+          font-weight: 600;
+
+          &:hover {
+            text-decoration: underline;
             color: #fde68a;
           }
         }

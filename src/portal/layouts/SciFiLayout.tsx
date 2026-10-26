@@ -84,6 +84,8 @@ export const SciFiLayout: FC = () => {
               username="papustanes"
               label="Invitar un Café"
               sublabel="Apoya el servidor & las crónicas"
+              suggestedAmount="$20 MXN"
+              minAmount={20}
             />
           </div>
           <div className="footer-bottom">
