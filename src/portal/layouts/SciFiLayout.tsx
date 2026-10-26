@@ -81,7 +81,6 @@ export const SciFiLayout: FC = () => {
         <div className="footer-inner">
           <div className="footer-donation-block">
             <KofiFooterDonation
-              username="papustanes"
               label="Invitar un Café"
               sublabel="Apoya el servidor & las crónicas"
               suggestedAmount="$20 MXN"

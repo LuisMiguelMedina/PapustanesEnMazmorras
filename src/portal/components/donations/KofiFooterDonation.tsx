@@ -1,16 +1,25 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, MouseEvent } from 'react';
 import './KofiFooterDonation.scss';
 
 export interface KofiFooterDonationProps {
-  username?: string;
   label?: string;
   sublabel?: string;
   suggestedAmount?: string;
   minAmount?: number;
 }
 
+// Obfuscated official Ko-fi target (prevents exposing personal username in plaintext and to crawlers)
+const OBFUSCATED_KOFI_TARGET = 'aHR0cHM6Ly9rby1maS5jb20vbHVpc21lZGluYTQ3ODcx';
+
+const getTargetKofiUrl = (): string => {
+  try {
+    return atob(OBFUSCATED_KOFI_TARGET);
+  } catch {
+    return 'https://ko-fi.com';
+  }
+};
+
 export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
-  username = 'papustanes',
   label = 'Invitar un Café',
   sublabel = 'Apoya el servidor Foundry VTT & las crónicas',
   suggestedAmount = '$20 MXN',
@@ -25,7 +34,8 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
   const [selectedAmount, setSelectedAmount] = useState<number>(initialBase);
   const [customAmountText, setCustomAmountText] = useState<string>('');
 
-  const kofiUrl = `https://ko-fi.com/${username}`;
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+  const cleanAliasPath = `${base}/donar`;
   const presets = [20, 50, 100, 200];
 
   // Base amount calculation (minimum minAmount)
@@ -58,8 +68,14 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isModalOpen]);
 
+  const handleOpenKofi = (e?: MouseEvent) => {
+    if (e) e.preventDefault();
+    window.open(getTargetKofiUrl(), '_blank', 'noopener,noreferrer');
+  };
+
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(kofiUrl).then(() => {
+    const shareUrl = `${window.location.origin}${cleanAliasPath}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     });
@@ -228,10 +244,12 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
               {/* Action Buttons */}
               <div className="modal-action-buttons">
                 <a
-                  href={kofiUrl}
+                  href={cleanAliasPath}
+                  onClick={handleOpenKofi}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-kofi-primary-action"
+                  title="Abrir página oficial de donación en Ko-fi"
                 >
                   <i className="fas fa-heart me-2" />
                   <span>
@@ -255,9 +273,14 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
 
               {/* Direct link footer note */}
               <div className="modal-footer-direct-note">
-                <span>Enlace oficial: </span>
-                <a href={kofiUrl} target="_blank" rel="noopener noreferrer">
-                  {kofiUrl.replace('https://', '')}
+                <span>Plataforma oficial: </span>
+                <a
+                  href={cleanAliasPath}
+                  onClick={handleOpenKofi}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  ko-fi.com (Papustanes en Mazmorras)
                 </a>
               </div>
             </div>

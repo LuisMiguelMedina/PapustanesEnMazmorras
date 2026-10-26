@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { FC, StrictMode, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -20,6 +20,49 @@ import { Articulos } from './portal/pages/Articulos';
 import { Settings } from './portal/pages/Settings';
 import { CampaignHub } from './portal/pages/CampaignHub';
 import { WikiArticleView } from './portal/pages/WikiArticleView';
+
+// Obfuscated official Ko-fi target
+const KOFI_DESTINATION_B64 = 'aHR0cHM6Ly9rby1maS5jb20vbHVpc21lZGluYTQ3ODcx';
+
+// Clean redirect component that bridges /donar and /kofi to the official destination
+const KofiRedirect: FC = () => {
+  useEffect(() => {
+    try {
+      window.location.replace(atob(KOFI_DESTINATION_B64));
+    } catch {
+      window.location.replace('https://ko-fi.com');
+    }
+  }, []);
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        background: '#0c0a09',
+        color: '#fde68a',
+        fontFamily: "'Space Grotesk', -apple-system, sans-serif",
+        textAlign: 'center',
+        padding: '2rem',
+      }}
+    >
+      <i className="fas fa-mug-hot fa-3x mb-3" style={{ color: '#f59e0b' }} />
+      <h3
+        style={{
+          fontFamily: "'Cinzel', Georgia, serif",
+          color: '#ffffff',
+          marginBottom: '0.5rem',
+        }}
+      >
+        Papustanes en Mazmorras
+      </h3>
+      <p style={{ color: '#cbd5e1' }}>Redirigiendo a la plataforma oficial de Ko-fi...</p>
+    </div>
+  );
+};
 
 // Multiverse of Madness — Sci-Fi Lore & Campaign Portal (Public) + ZRK Intranet (Auth-guarded).
 const basename = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -44,11 +87,15 @@ const router = createBrowserRouter(
           ],
         },
 
-        // 2. Auth routes
+        // 2. Donation Alias Routes (obfuscates personal username behind clean /donar alias)
+        { path: 'donar', element: <KofiRedirect /> },
+        { path: 'kofi', element: <KofiRedirect /> },
+
+        // 3. Auth routes
         { path: 'login', element: <Login /> },
         { path: 'register', element: <Register /> },
 
-        // 3. ZRK Intranet Dashboard & Admin terminal (Auth-guarded)
+        // 4. ZRK Intranet Dashboard & Admin terminal (Auth-guarded)
         {
           element: <ProtectedRoute />,
           children: [
@@ -69,7 +116,7 @@ const router = createBrowserRouter(
           ],
         },
 
-        // 4. Fallback redirect to Home
+        // 5. Fallback redirect to Home
         { path: '*', element: <Navigate to="/" replace /> },
       ],
     },
