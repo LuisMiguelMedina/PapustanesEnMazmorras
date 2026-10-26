@@ -25,8 +25,8 @@ const DEFAULT_PAYPAL_CLIENT_ID =
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || DEFAULT_PAYPAL_CLIENT_ID;
 
 export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
-  label = 'Donaciones & Mecenazgo',
-  sublabel = 'Apoyo directo al servidor vía PayPal',
+  label = 'Invitar un Café',
+  sublabel = 'Apoya el servidor Foundry VTT & las crónicas',
   suggestedAmount = '$20 MXN',
   minAmount = 20,
 }) => {
@@ -129,12 +129,12 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
           setPaymentError(null);
           setIsModalOpen(true);
         }}
-        title="Apoyar el proyecto y el servidor en PayPal"
+        title="Invitar un café para apoyar el proyecto y el servidor"
         aria-haspopup="dialog"
         aria-expanded={isModalOpen}
       >
         <span className="kofi-icon-badge">
-          <i className="fab fa-paypal" />
+          <i className="fas fa-mug-hot" />
         </span>
         <div className="kofi-label-stack">
           <span className="kofi-primary-text">{label}</span>
@@ -157,10 +157,10 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
             {/* Pinned Modal Header Banner */}
             <div className="modal-header-banner">
               <div className="banner-emblem">
-                <i className="fas fa-dice-d20" />
+                <i className="fas fa-mug-hot" />
               </div>
               <div className="banner-titles">
-                <span className="banner-kicker">PASARELA OFICIAL DIRECTA</span>
+                <span className="banner-kicker">MECENAZGO COMUNITARIO</span>
                 <h4 id="kofi-modal-title" className="banner-main-title">
                   Papustanes en Mazmorras
                 </h4>
@@ -179,14 +179,14 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
             {isSuccess ? (
               <div className="payment-success-card animate__animated animate__zoomIn">
                 <div className="success-emblem">
-                  <i className="fas fa-check-circle" />
+                  <i className="fas fa-mug-hot" />
                 </div>
-                <h4 className="success-title">¡Ofrenda Recibida con Honor!</h4>
+                <h4 className="success-title">¡Café Recibido con Honor!</h4>
                 <p className="success-desc">
                   Muchas gracias, <strong>{payerName}</strong>. Tu aportación de{' '}
                   <span className="success-amount-badge">${finalAmount.toFixed(2)} MXN</span> ha
-                  sido procesada exitosamente y destinada directamente al sustento del servidor
-                  Foundry VTT y la Wiki de Lore.
+                  sido procesada exitosamente como soporte digital para el servidor Foundry VTT y
+                  la Wiki de Lore.
                 </p>
                 <button
                   type="button"
@@ -202,7 +202,7 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                 {/* Scrollable Modal Body */}
                 <div className="modal-body-content">
                   <p className="lead-paragraph">
-                    Tus aportaciones sostienen la infraestructura del servidor en la nube de{' '}
+                    Tus cafés sostienen la infraestructura del servidor en la nube de{' '}
                     <strong>Foundry VTT</strong>, el almacenamiento de fichas y la documentación del
                     lore en la <strong>Wiki del Multiverso</strong>.
                   </p>
@@ -210,15 +210,15 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                   {/* Commission & Processor Recommendation Notice */}
                   <div className="processor-tip-box">
                     <div className="tip-icon">
-                      <i className="fab fa-paypal" />
+                      <i className="fas fa-mug-hot" />
                     </div>
                     <div className="tip-text">
-                      <span className="tip-heading">Pago Directo y Seguro con PayPal</span>
+                      <span className="tip-heading">Apoyo Digital Directo vía PayPal</span>
                       <p>
-                        Cualquier aportación es bien recibida (mínimo sugerido de{' '}
-                        <strong>${minAmount} MXN</strong>). Puedes pagar al instante con saldo de{' '}
+                        Puedes invitar desde 1 café (mínimo de <strong>${minAmount} MXN</strong>).
+                        El pago se procesa al instante como contenido y soporte digital con saldo de{' '}
                         <strong>PayPal</strong> o directamente con tu{' '}
-                        <strong>tarjeta de débito/crédito</strong> sin salir del portal.
+                        <strong>tarjeta de débito/crédito</strong>.
                       </p>
                     </div>
                   </div>
@@ -235,10 +235,10 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                     <div className="amount-section-header">
                       <span className="amount-section-label">
                         <i className="fas fa-coins me-1" />
-                        Monto de tu aportación:
+                        Monto de tu café / apoyo:
                       </span>
                       <span className="amount-min-badge">
-                        Desde ${minAmount} MXN (sin límite)
+                        Desde ${minAmount} MXN (1 café)
                       </span>
                     </div>
 
@@ -290,7 +290,7 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                         }}
                       />
                       <span className="checkbox-text-main">
-                        Apóyame pagando la comisión de PayPal
+                        Apóyame cubriendo la comisión de PayPal
                       </span>
                       {coverPaypalFee && (
                         <span className="fee-addon-inline-tag animate__animated animate__fadeIn">
@@ -317,7 +317,7 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                           layout: 'vertical',
                           color: 'gold',
                           shape: 'rect',
-                          label: 'donate',
+                          label: 'pay',
                           height: 44,
                           tagline: false,
                         }}
@@ -327,11 +327,29 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                             intent: 'CAPTURE',
                             purchase_units: [
                               {
-                                description: 'Ofrenda al servidor Papustanes en Mazmorras',
+                                description: 'Invitar un café - Apoyo al servidor Papustanes en Mazmorras',
                                 amount: {
                                   currency_code: 'MXN',
                                   value: finalAmount.toFixed(2),
+                                  breakdown: {
+                                    item_total: {
+                                      currency_code: 'MXN',
+                                      value: finalAmount.toFixed(2),
+                                    },
+                                  },
                                 },
+                                items: [
+                                  {
+                                    name: 'Invitar un café (Soporte digital del servidor)',
+                                    description: 'Mecenazgo para Foundry VTT y Wiki de Lore',
+                                    unit_amount: {
+                                      currency_code: 'MXN',
+                                      value: finalAmount.toFixed(2),
+                                    },
+                                    quantity: '1',
+                                    category: 'DIGITAL_GOODS',
+                                  },
+                                ],
                               },
                             ],
                           });
@@ -367,7 +385,7 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                       type="button"
                       className="btn-kofi-copy-link"
                       onClick={handleCopyLink}
-                      title="Copiar enlace de donación al portapapeles"
+                      title="Copiar enlace de apoyo al portapapeles"
                     >
                       <i className={`fas ${copied ? 'fa-check text-success' : 'fa-copy'} me-1`} />
                       <span>{copied ? '¡Enlace Copiado!' : 'Copiar Enlace'}</span>
@@ -379,10 +397,10 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn-kofi-secondary-link"
-                      title="Donar alternativamente a través de Ko-fi"
+                      title="Colaborar alternativamente a través de Ko-fi"
                     >
                       <i className="fas fa-mug-hot me-1" />
-                      <span>O donar vía Ko-fi</span>
+                      <span>O colaborar vía Ko-fi</span>
                     </a>
                   </div>
                 </div>
