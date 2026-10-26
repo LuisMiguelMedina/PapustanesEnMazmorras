@@ -5,13 +5,13 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# Legacy Pages (source: main /): solo publicamos archivos al repo; el deploy lo hace
+# el workflow nativo "pages build and deployment" en el push de chore(pages).
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
-  group: "pages"
+  group: "pages-build"
   cancel-in-progress: false
 
 jobs:
@@ -63,24 +63,3 @@ jobs:
           git commit -m "chore(pages): publish production build [skip ci]"
           git push
         fi
-
-    - name: Setup Pages
-      uses: actions/configure-pages@v5
-
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: './dist'
-
-  deploy:
-    if: github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[skip ci]')
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
