@@ -35,6 +35,19 @@ const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || DEFAULT_PAYPAL
  */
 const PAYPAL_SDK_LOCALE = 'es_MX';
 const PAYPAL_ORDER_LOCALE = 'es-MX';
+/** Telemetría/logger de PayPal bloqueada por extensiones; no suele afectar el cobro. */
+const isBenignPayPalSdkNoise = (err: unknown): boolean => {
+  const raw =
+    typeof err === 'string'
+      ? err
+      : err instanceof Error
+        ? err.message
+        : err && typeof err === 'object'
+          ? JSON.stringify(err)
+          : '';
+  return /logger|xoplatform|ERR_BLOCKED|allowpaymentrequest|allow attribute/i.test(raw);
+};
+
 const buildPayPalScriptOptions = () => {
   const options: {
     clientId: string;
@@ -169,23 +182,36 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
       {/* Footer Interactive Trigger Button */}
       <button
         type="button"
-        className="btn-paypal-fantasy-trigger"
+        className={isTopbarTrigger ? 'btn-donate-quick' : 'btn-paypal-fantasy-trigger'}
         onClick={() => {
           setIsSuccess(false);
           setPaymentError(null);
           setIsModalOpen(true);
         }}
-        title={`Invitar un café para apoyar a ${communityName} y su servidor`}
+        title={
+          isTopbarTrigger
+            ? `Invitar un café para apoyar a ${communityName} y su servidor`
+            : `Invitar un café para apoyar a ${communityName} y su servidor — ${sublabel}`
+        }
         aria-haspopup="dialog"
         aria-expanded={isModalOpen}
       >
-        <span className="paypal-icon-badge">
-          <i className="fas fa-mug-hot" />
-        </span>
-        <div className="paypal-label-stack">
-          <span className="paypal-primary-text">{label}</span>
-          <span className="paypal-subtext">{sublabel}</span>
-        </div>
+        {isTopbarTrigger ? (
+          <>
+            <i className="fas fa-mug-hot donate-fantasy-icon" aria-hidden="true" />
+            <span>{label}</span>
+          </>
+        ) : (
+          <>
+            <span className="paypal-icon-badge">
+              <i className="fas fa-mug-hot" />
+            </span>
+            <div className="paypal-label-stack">
+              <span className="paypal-primary-text">{label}</span>
+              <span className="paypal-subtext">{sublabel}</span>
+            </div>
+          </>
+        )}
       </button>
 
       {/* Medieval Fantasy Informative Modal */}
@@ -263,7 +289,9 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                       Puedes invitar desde 1 café (mínimo de <strong>${minAmount} MXN</strong>).
                       El pago se procesa al instante como contenido y soporte digital con saldo de{' '}
                       <strong>PayPal</strong> o directamente con tu{' '}
-                      <strong>tarjeta de débito/crédito</strong>.
+                      <strong>tarjeta de débito/crédito</strong>. Si usas bloqueador de anuncios,
+                      puede aparecer en consola un aviso de PayPal (<em>logger</em>); no significa que
+                      la página esté rota.
                     </p>
                   </div>
                 </div>
@@ -414,11 +442,16 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                         }
                       }}
                       onError={(err) => {
+                        if (isBenignPayPalSdkNoise(err)) {
+                          return;
+                        }
                         console.error('PayPal Buttons error:', err);
-                        setPaymentError('Hubo un inconveniente al cargar PayPal. Revisa tu conexión.');
+                        setPaymentError(
+                          'No se pudo cargar el botón de PayPal. Prueba sin bloqueador de anuncios o recarga la página.',
+                        );
                       }}
                       onCancel={() => {
-                        setPaymentError('Operación cancelada por el usuario.');
+                        setPaymentError(null);
                       }}
                     />
                   </PayPalScriptProvider>

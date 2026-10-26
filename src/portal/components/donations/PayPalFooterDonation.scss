@@ -6,40 +6,6 @@
   display: inline-flex;
   align-items: center;
 
-  &--topbar {
-    .btn-paypal-fantasy-trigger {
-      padding: 6px 12px 6px 6px;
-      border-radius: 6px;
-      box-shadow: 0 0 12px rgba(234, 88, 12, 0.2);
-
-      .paypal-icon-badge {
-        width: 28px;
-        height: 28px;
-        font-size: 0.85rem;
-      }
-
-      .paypal-label-stack .paypal-subtext {
-        display: none;
-      }
-
-      .paypal-label-stack .paypal-primary-text {
-        font-size: 0.8rem;
-        white-space: nowrap;
-      }
-
-      @media (min-width: 1100px) {
-        .paypal-label-stack .paypal-subtext {
-          display: block;
-          font-size: 0.62rem;
-          max-width: 200px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-      }
-    }
-  }
-
   /* ---------------- FOOTER TRIGGER BUTTON ---------------- */
   .btn-paypal-fantasy-trigger {
     background: linear-gradient(135deg, rgba(28, 25, 23, 0.95) 0%, rgba(12, 10, 9, 0.98) 100%);
