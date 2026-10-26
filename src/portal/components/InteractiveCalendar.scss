@@ -1031,14 +1031,20 @@
           gap: 0.45rem;
 
           .preset-style-btn {
-            border: 1.5px solid #000;
+            border: 1.5px solid rgba(0, 0, 0, 0.6);
             border-radius: 999px;
             padding: 4px 10px;
             font-size: 0.72rem;
             font-weight: 800;
             font-family: 'Space Grotesk', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
             cursor: pointer;
             transition: transform 0.15s, box-shadow 0.15s;
+
+            &:hover {
+              transform: translateY(-1px);
+            }
 
             &.active {
               box-shadow: 0 0 0 2px #f59e0b, 0 0 10px #f59e0b;

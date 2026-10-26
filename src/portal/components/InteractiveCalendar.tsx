@@ -5,7 +5,6 @@ import {
   CalendarEventOccurrence,
   CalendarEventTag,
   DEFAULT_TAGS,
-  PRESET_EVENT_STYLES,
   RecurrenceType,
 } from '../models/Calendar/CalendarModels';
 import { CalendarDataAccess } from '../dataAccess/CalendarDataAccess';
@@ -307,10 +306,18 @@ export const InteractiveCalendar: FC = () => {
       `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
     setFormDate(defaultDate);
     setFormTime('20:00');
-    setFormAuthor('PAC');
+    const firstAuthor = tags.find((t) => t.category === 'AUTHOR') || tags[0];
+    const defaultAuthor = firstAuthor ? firstAuthor.label : 'PAC';
+    setFormAuthor(defaultAuthor);
     setFormCategory('CAMPAÑA');
-    setFormStyleId('elixir_gradient');
-    setFormCustomColor('');
+    const initialTag = firstAuthor || tags[0];
+    if (initialTag) {
+      setFormStyleId(initialTag.id);
+      setFormCustomColor(initialTag.color);
+    } else {
+      setFormStyleId('');
+      setFormCustomColor('');
+    }
     setFormRecurrence('NONE');
     setFormDesc('');
     setFormError('');
@@ -327,10 +334,16 @@ export const InteractiveCalendar: FC = () => {
     setFormAuthor(evt.authorTag || 'LUISMI');
     setFormCategory(evt.categoryTag || 'CAMPAÑA');
 
-    const matchedPreset = PRESET_EVENT_STYLES.find((p) => p.background === evt.colorVariant);
-    if (matchedPreset) {
-      setFormStyleId(matchedPreset.id);
-      setFormCustomColor('');
+    // Find if evt.colorVariant matches one of the created tags
+    const matchedTag = tags.find(
+      (t) =>
+        t.color.toLowerCase() === evt.colorVariant?.toLowerCase() ||
+        t.label.toUpperCase() === evt.authorTag?.toUpperCase() ||
+        t.label.toUpperCase() === evt.categoryTag?.toUpperCase(),
+    );
+    if (matchedTag) {
+      setFormStyleId(matchedTag.id);
+      setFormCustomColor(matchedTag.color);
     } else {
       setFormStyleId('custom');
       setFormCustomColor(evt.colorVariant);
@@ -360,15 +373,17 @@ export const InteractiveCalendar: FC = () => {
 
     let colorVariant = '#38b6ff';
     let textColor = '#000000';
-    if (formStyleId === 'custom' && formCustomColor) {
+
+    const selectedTag = tags.find((t) => t.id === formStyleId);
+    if (selectedTag) {
+      colorVariant = selectedTag.color;
+      textColor = selectedTag.textColor || '#ffffff';
+    } else if (formCustomColor) {
       colorVariant = formCustomColor;
-      textColor = '#ffffff';
-    } else {
-      const preset = PRESET_EVENT_STYLES.find((p) => p.id === formStyleId);
-      if (preset) {
-        colorVariant = preset.background;
-        textColor = preset.textColor;
-      }
+      textColor = selectedEvent?.textColor || '#000000';
+    } else if (tags.length > 0) {
+      colorVariant = tags[0].color;
+      textColor = tags[0].textColor || '#ffffff';
     }
 
     setIsSubmitting(true);
@@ -829,19 +844,39 @@ export const InteractiveCalendar: FC = () => {
 
               {/* Visual Style Selection */}
               <div className="form-row">
-                <label>Estilo Visual del Pill</label>
+                <label>Estilo Visual del Pill (Etiquetas Creadas)</label>
                 <div className="style-preset-selector">
-                  {PRESET_EVENT_STYLES.map((preset) => (
+                  {tags.map((tag) => (
                     <button
-                      key={preset.id}
+                      key={tag.id}
                       type="button"
-                      className={`preset-style-btn ${formStyleId === preset.id ? 'active' : ''}`}
-                      style={{ background: preset.background, color: preset.textColor }}
-                      onClick={() => setFormStyleId(preset.id)}
+                      className={`preset-style-btn ${formStyleId === tag.id ? 'active' : ''}`}
+                      style={{ background: tag.color, color: tag.textColor || '#ffffff' }}
+                      onClick={() => {
+                        setFormStyleId(tag.id);
+                        setFormCustomColor(tag.color);
+                        if (tag.category === 'AUTHOR') {
+                          setFormAuthor(tag.label);
+                        } else if (tag.category === 'TYPE') {
+                          setFormCategory(tag.label);
+                        }
+                      }}
+                      title={`Etiqueta: ${tag.label} (${tag.category === 'AUTHOR' ? 'Autor' : 'Tipo'})`}
                     >
-                      {preset.label.split(' ')[0]}
+                      {tag.label}
                     </button>
                   ))}
+                  {formCustomColor && !tags.some((t) => t.color.toLowerCase() === formCustomColor.toLowerCase()) && (
+                    <button
+                      type="button"
+                      className={`preset-style-btn ${formStyleId === 'custom' ? 'active' : ''}`}
+                      style={{ background: formCustomColor, color: selectedEvent?.textColor || '#000000' }}
+                      onClick={() => setFormStyleId('custom')}
+                      title="Estilo especial o degradado actual del evento"
+                    >
+                      {selectedEvent?.title === 'ELIXIR' ? 'ELIXIR' : 'Especial'}
+                    </button>
+                  )}
                 </div>
               </div>
 
