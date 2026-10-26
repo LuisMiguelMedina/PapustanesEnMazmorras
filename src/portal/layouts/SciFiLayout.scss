@@ -60,6 +60,12 @@
         transition: transform 0.25s ease, filter 0.25s ease;
       }
 
+      .brand-torch-emblem-fallback {
+        font-size: 1.65rem;
+        color: #f59e0b;
+        filter: drop-shadow(0 0 8px rgba(234, 88, 12, 0.65));
+      }
+
       &:hover .brand-torch-emblem {
         transform: scale(1.12) rotate(-3deg);
         filter: drop-shadow(0 0 14px rgba(234, 88, 12, 0.95)) drop-shadow(0 0 20px rgba(185, 28, 28, 0.5));

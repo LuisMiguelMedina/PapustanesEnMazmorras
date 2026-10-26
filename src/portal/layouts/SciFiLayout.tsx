@@ -1,11 +1,17 @@
-import { FC, useEffect } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { ref, onValue } from 'firebase/database';
 import { db } from '../firebase';
 import { KofiFooterDonation } from '../components/donations/KofiFooterDonation';
 import './SciFiLayout.scss';
 
+const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+const defaultFavicon = `${base}/favicon.png`;
+
 export const SciFiLayout: FC = () => {
+  const [brandLogo, setBrandLogo] = useState<string>(defaultFavicon);
+  const [imgError, setImgError] = useState<boolean>(false);
+
   // Sync dynamic favicon from Firebase RTDB (best-effort, non-blocking)
   useEffect(() => {
     const faviconRef = ref(db, 'system/branding/favicon');
@@ -15,6 +21,8 @@ export const SciFiLayout: FC = () => {
         const data = snapshot.val();
         if (data && (data.base64 || data.url)) {
           const iconHref = data.base64 || data.url;
+          setBrandLogo(iconHref);
+          setImgError(false);
           const iconLinks = document.querySelectorAll<HTMLLinkElement>("link[rel*='icon']");
           iconLinks.forEach((link) => {
             link.href = iconHref;
@@ -28,17 +36,23 @@ export const SciFiLayout: FC = () => {
 
     return () => unsubscribe();
   }, []);
+
   return (
     <div className="scifi-portal-shell fantasy-theme">
       {/* Medieval Fantasy Top Navigation Bar */}
       <header className="scifi-topbar fantasy-topbar">
         <div className="topbar-inner">
           <Link to="/campaigns" className="brand-mark" title="Papustanes en Mazmorras">
-            <img
-              src="./favicon.png"
-              alt="Papustanes en Mazmorras"
-              className="brand-torch-emblem"
-            />
+            {!imgError ? (
+              <img
+                src={brandLogo}
+                alt="Papustanes en Mazmorras"
+                className="brand-torch-emblem"
+                onError={() => setImgError(true)}
+              />
+            ) : (
+              <i className="fas fa-dice-d20 brand-torch-emblem-fallback" />
+            )}
             <span className="brand-title-main">PAPUSTANES EN MAZMORRAS</span>
           </Link>
 
