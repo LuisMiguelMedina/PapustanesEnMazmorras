@@ -332,7 +332,7 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                 </div>
 
                 {/* Live PayPal Buttons (Expands smoothly in scrollable container) */}
-                <div className="paypal-button-embed-wrapper paypal-debit-card-surface">
+                <div className="paypal-button-embed-wrapper">
                   <PayPalScriptProvider options={buildPayPalScriptOptions()}>
                     <PayPalButtons
                       style={{
