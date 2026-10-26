@@ -98,33 +98,6 @@
       flex-wrap: wrap;
       justify-content: flex-end;
 
-      .btn-donation-copy-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(245, 158, 11, 0.45);
-        color: #fde68a;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.8rem;
-        font-weight: 600;
-        padding: 6px 14px;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.25s ease;
-
-        i {
-          color: #f59e0b;
-          font-size: 0.85rem;
-        }
-
-        &:hover {
-          background: rgba(245, 158, 11, 0.18);
-          border-color: #f59e0b;
-          color: #fffbeb;
-        }
-      }
-
       .btn-vtt-quick {
         display: inline-flex;
         align-items: center;

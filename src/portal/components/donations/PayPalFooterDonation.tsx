@@ -10,6 +10,8 @@ export interface PayPalFooterDonationProps {
   suggestedAmount?: string;
   minAmount?: number;
   hideKofi?: boolean;
+  /** Dónde se muestra el botón que abre el modal (una sola instancia por página). */
+  triggerPlacement?: 'footer' | 'topbar';
 }
 
 // Obfuscated official Ko-fi target (secondary/fallback channel)
@@ -69,6 +71,7 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
   suggestedAmount = '$20 MXN',
   minAmount = 20,
   hideKofi = true,
+  triggerPlacement = 'footer',
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
@@ -192,8 +195,12 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
     setIsModalOpen(false);
   };
 
+  const isTopbarTrigger = triggerPlacement === 'topbar';
+
   return (
-    <div className="paypal-footer-donation-wrapper">
+    <div
+      className={`paypal-footer-donation-wrapper${isTopbarTrigger ? ' paypal-footer-donation-wrapper--topbar' : ''}`}
+    >
       {/* Footer Interactive Trigger Button */}
       <button
         type="button"
