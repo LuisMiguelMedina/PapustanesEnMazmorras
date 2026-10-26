@@ -84,7 +84,6 @@
 
 /* Modal en portal (body): no puede vivir bajo la topbar (backdrop-filter rompe fixed) */
 .paypal-modal-backdrop {
-    color-scheme: light;
     position: fixed;
     inset: 0;
     z-index: 100000;
@@ -548,26 +547,11 @@
       }
 
       /* Live PayPal Buttons Container (Expands naturally in scrollable container) */
+      /* Solo contenedor: no tocar iframes ni estilos del SDK de PayPal */
       .paypal-button-embed-wrapper {
         width: 100%;
-        min-height: 44px;
-        position: relative;
-        z-index: 10;
         margin-top: 0.25rem;
-        color-scheme: light only;
-        background: #ffffff;
-        border: 1px solid rgba(245, 158, 11, 0.4);
-        border-radius: 8px;
-        padding: 0.75rem 0.65rem 0.85rem;
-
-        > div {
-          width: 100% !important;
-          max-width: 100% !important;
-        }
-
-        iframe {
-          z-index: 10 !important;
-        }
+        padding: 0.25rem 0;
       }
 
       .modal-secondary-actions {
@@ -621,15 +605,6 @@
       }
     }
   }
-
-/* Overlays de PayPal (dirección de facturación) montados fuera del modal */
-html.paypal-donate-modal-open {
-  color-scheme: light;
-}
-
-html.paypal-donate-modal-open body > div[id*='zoid'] {
-  color-scheme: light;
-}
 
 @keyframes paypalFadeIn {
   from {
