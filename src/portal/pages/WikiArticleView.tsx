@@ -5,6 +5,7 @@ import { WikiInfobox } from '../components/wiki/WikiInfobox';
 import { WikiSidebar } from '../components/wiki/WikiSidebar';
 import { WikiHomeView } from '../components/wiki/WikiHomeView';
 import { WikiTableOfContents } from '../components/wiki/WikiTableOfContents';
+import { WikiAudioNarrator } from '../components/wiki/WikiAudioNarrator';
 import { extractHeadings } from '../components/wiki/wikiHelpers';
 import { useWikiViewModel } from '../viewModels/useWikiViewModel';
 import './WikiArticleView.scss';
@@ -129,6 +130,12 @@ export const WikiArticleView: FC = () => {
                 </span>
               </div>
             </header>
+
+            {/* Vocaloid Miku TTS Audio Narrator (Book Mode) */}
+            <WikiAudioNarrator
+              content={currentArticle.ArticleContent}
+              articleTitle={currentArticle.ArticleTitle}
+            />
 
             <div className="article-body-layout">
               {currentArticle.ArticleInfobox && (
