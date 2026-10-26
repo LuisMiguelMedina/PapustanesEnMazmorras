@@ -2,6 +2,7 @@ import { FC, useState, useEffect, useMemo, MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { getDonationPagePath, getDonationShareUrl } from './DonationCopyLinkButton';
+import { captureDonationOrderOnServer, createDonationOrderOnServer } from './paypalServerApi';
 import './PayPalFooterDonation.scss';
 
 export interface PayPalFooterDonationProps {
@@ -35,7 +36,6 @@ const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || DEFAULT_PAYPAL
  * El script del SDK exige locale con guion bajo (es_MX); la Orders API usa BCP-47 (es-MX).
  */
 const PAYPAL_SDK_LOCALE = 'es_MX';
-const PAYPAL_ORDER_LOCALE = 'es-MX';
 
 export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
   communityName = 'Papustanes en Mazmorras',
@@ -328,58 +328,39 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                   <PayPalScriptProvider options={paypalScriptOptions}>
                     <PayPalButtons
                       forceReRender={[finalAmount]}
-                      createOrder={(_data, actions) => {
-                        return actions.order.create({
-                          intent: 'CAPTURE',
-                          application_context: {
-                            brand_name: communityName,
-                            locale: PAYPAL_ORDER_LOCALE,
-                            landing_page: 'NO_PREFERENCE',
-                            shipping_preference: 'NO_SHIPPING',
-                            user_action: 'PAY_NOW',
-                          },
-                          purchase_units: [
-                            {
-                              description: `Invitar un café - Apoyo a ${communityName}`,
-                              amount: {
-                                currency_code: 'MXN',
-                                value: finalAmount.toFixed(2),
-                                breakdown: {
-                                  item_total: {
-                                    currency_code: 'MXN',
-                                    value: finalAmount.toFixed(2),
-                                  },
-                                },
-                              },
-                              items: [
-                                {
-                                  name: `Invitar un café (Soporte digital ${communityName})`,
-                                  description: 'Soporte para Foundry VTT y mantenimiento de la página',
-                                  unit_amount: {
-                                    currency_code: 'MXN',
-                                    value: finalAmount.toFixed(2),
-                                  },
-                                  quantity: '1',
-                                  category: 'DIGITAL_GOODS',
-                                },
-                              ],
-                            },
-                          ],
-                        });
-                      }}
-                      onApprove={async (_data, actions) => {
+                      createOrder={async () =>
+                        createDonationOrderOnServer({
+                          amount: finalAmount,
+                          communityName,
+                        })
+                      }
+                      onApprove={async (data, actions) => {
                         try {
-                          if (!actions.order) return;
-                          const details = await actions.order.capture();
+                          setPaymentError(null);
+                          const details = await captureDonationOrderOnServer(data.orderID);
+                          const payer = details as {
+                            payer?: { name?: { given_name?: string; surname?: string } };
+                          };
                           const donorName =
-                            details.payer?.name?.given_name ||
-                            details.payer?.name?.surname ||
+                            payer.payer?.name?.given_name ||
+                            payer.payer?.name?.surname ||
                             'Aventurero';
                           setPayerName(donorName);
                           setIsSuccess(true);
                         } catch (err) {
+                          const paypalErr = err as Error & {
+                            paypalDetails?: Array<{ issue?: string }>;
+                          };
+                          if (
+                            paypalErr.paypalDetails?.[0]?.issue === 'INSTRUMENT_DECLINED' &&
+                            actions.restart
+                          ) {
+                            return actions.restart();
+                          }
                           console.error('Capture error:', err);
-                          setPaymentError('No se pudo completar el cobro. Por favor verifica tu cuenta.');
+                          setPaymentError(
+                            'No se pudo completar el cobro. Por favor verifica tu cuenta.',
+                          );
                         }
                       }}
                       onError={(err) => {
