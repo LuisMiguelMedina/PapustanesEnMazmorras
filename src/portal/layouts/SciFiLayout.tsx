@@ -86,6 +86,7 @@ export const SciFiLayout: FC = () => {
               sublabel="Apoya el servidor Foundry VTT & mantenimiento de la página"
               suggestedAmount="$20 MXN"
               minAmount={20}
+              hideKofi={true}
             />
           </div>
           <div className="footer-bottom">

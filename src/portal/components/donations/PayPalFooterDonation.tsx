@@ -8,6 +8,7 @@ export interface PayPalFooterDonationProps {
   sublabel?: string;
   suggestedAmount?: string;
   minAmount?: number;
+  hideKofi?: boolean;
 }
 
 // Obfuscated official Ko-fi target (secondary/fallback channel)
@@ -31,6 +32,7 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
   sublabel = 'Apoya el servidor Foundry VTT & mantenimiento de la página',
   suggestedAmount = '$20 MXN',
   minAmount = 20,
+  hideKofi = true,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
@@ -393,17 +395,20 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                       <span>{copied ? '¡Enlace Copiado!' : 'Copiar Enlace'}</span>
                     </button>
 
-                    <a
+                    {!hideKofi && (
+                      <a
                       href={cleanAliasPath}
                       onClick={handleOpenKofi}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn-paypal-secondary-link"
+                      className="btn-paypal-secondary-link hide"
+                      hidden={hideKofi}
                       title="Colaborar alternativamente a través de Ko-fi"
                     >
                       <i className="fas fa-mug-hot me-1" />
                       <span>O colaborar vía Ko-fi</span>
-                    </a>
+                      </a>
+                    )}
                   </div>
                 </div>
               </>

@@ -570,7 +570,7 @@
       .modal-secondary-actions {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
         gap: 0.75rem;
         flex-wrap: wrap;
 
@@ -596,6 +596,10 @@
         }
 
         .btn-paypal-secondary-link {
+          &.hide,
+          &[hidden] {
+            display: none !important;
+          }
           color: #a8a29e;
           font-size: 0.76rem;
           font-weight: 600;
