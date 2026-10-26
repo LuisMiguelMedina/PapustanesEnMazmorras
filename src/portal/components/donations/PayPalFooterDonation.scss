@@ -117,11 +117,11 @@
 
   /* ---------------- MODAL BACKDROP ---------------- */
   .paypal-modal-backdrop {
-    color-scheme: none;
+    color-scheme: light;
     position: fixed;
     inset: 0;
     z-index: 100000;
-    background: rgba(4, 5, 8, 0.84);
+    background: rgba(41, 37, 36, 0.72);
     backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
@@ -136,11 +136,11 @@
       max-width: 520px;
       max-height: calc(100vh - 2.5rem);
       margin: auto;
-      background: linear-gradient(160deg, #14161f 0%, #0d0f17 100%);
-      border: 1px solid rgba(245, 158, 11, 0.45);
+      background: linear-gradient(165deg, #fffbeb 0%, #fff7ed 48%, #ffffff 100%);
+      border: 1px solid rgba(217, 119, 6, 0.45);
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 30px rgba(245, 158, 11, 0.15);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), 0 0 24px rgba(245, 158, 11, 0.2);
       display: flex;
       flex-direction: column;
 
@@ -157,8 +157,8 @@
       align-items: center;
       gap: 0.85rem;
       padding: 1.1rem 1.35rem;
-      background: linear-gradient(90deg, rgba(234, 88, 12, 0.18) 0%, rgba(30, 25, 22, 0.6) 100%);
-      border-bottom: 1px solid rgba(245, 158, 11, 0.25);
+      background: linear-gradient(90deg, rgba(254, 243, 199, 0.95) 0%, rgba(255, 251, 235, 1) 100%);
+      border-bottom: 1px solid rgba(217, 119, 6, 0.35);
 
       .banner-emblem {
         width: 38px;
@@ -192,16 +192,16 @@
           font-family: 'Cinzel', Georgia, serif;
           font-size: 1.12rem;
           font-weight: 800;
-          color: #ffffff;
+          color: #78350f;
           margin: 0;
           letter-spacing: 0.03em;
         }
       }
 
       .btn-modal-dismiss {
-        background: transparent;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        color: #94a3b8;
+        background: rgba(255, 255, 255, 0.65);
+        border: 1px solid rgba(217, 119, 6, 0.35);
+        color: #78716c;
         width: 32px;
         height: 32px;
         border-radius: 6px;
@@ -246,27 +246,27 @@
         font-family: 'Cinzel', Georgia, serif;
         font-size: 1.35rem;
         font-weight: 800;
-        color: #fef08a;
+        color: #92400e;
         margin: 0;
         letter-spacing: 0.04em;
       }
 
       .success-desc {
-        color: #cbd5e1;
+        color: #44403c;
         font-size: 0.95rem;
         line-height: 1.6;
         max-width: 440px;
         margin: 0;
 
         strong {
-          color: #ffffff;
+          color: #1c1917;
         }
 
         .success-amount-badge {
           display: inline-block;
           background: rgba(245, 158, 11, 0.2);
           border: 1px solid rgba(245, 158, 11, 0.5);
-          color: #fde68a;
+          color: #b45309;
           padding: 2px 8px;
           border-radius: 6px;
           font-weight: 800;
@@ -316,7 +316,7 @@
         width: 7px;
       }
       &::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.35);
+        background: rgba(245, 158, 11, 0.12);
         border-radius: 4px;
       }
       &::-webkit-scrollbar-thumb {
@@ -330,11 +330,11 @@
       .lead-paragraph {
         font-size: 0.88rem;
         line-height: 1.55;
-        color: #cbd5e1;
+        color: #44403c;
         margin: 0;
 
         strong {
-          color: #fef08a;
+          color: #b45309;
         }
       }
 
@@ -343,9 +343,9 @@
         display: flex;
         align-items: flex-start;
         gap: 0.85rem;
-        background: rgba(245, 158, 11, 0.08);
-        border: 1px solid rgba(245, 158, 11, 0.25);
-        border-left: 3px solid #f59e0b;
+        background: rgba(254, 243, 199, 0.65);
+        border: 1px solid rgba(217, 119, 6, 0.35);
+        border-left: 3px solid #d97706;
         border-radius: 6px;
         padding: 0.8rem 0.95rem;
 
@@ -359,11 +359,11 @@
         .tip-text {
           font-size: 0.82rem;
           line-height: 1.45;
-          color: #e2e8f0;
+          color: #57534e;
 
           .tip-heading {
             display: block;
-            color: #fde68a;
+            color: #92400e;
             font-size: 0.85rem;
             font-weight: 700;
             margin-bottom: 3px;
@@ -371,12 +371,12 @@
 
           p {
             margin: 0;
-            color: #cbd5e1;
+            color: #57534e;
             line-height: 1.45;
 
             strong {
               display: inline;
-              color: #fef08a;
+              color: #b45309;
               font-weight: 700;
             }
           }
@@ -385,9 +385,9 @@
 
       /* Payment Error Alert */
       .payment-error-alert {
-        background: rgba(239, 68, 68, 0.15);
-        border: 1px solid rgba(239, 68, 68, 0.45);
-        color: #fca5a5;
+        background: rgba(254, 226, 226, 0.85);
+        border: 1px solid rgba(220, 38, 38, 0.45);
+        color: #b91c1c;
         padding: 0.65rem 0.95rem;
         border-radius: 6px;
         font-size: 0.82rem;
@@ -401,8 +401,8 @@
         display: flex;
         flex-direction: column;
         gap: 0.65rem;
-        background: rgba(28, 25, 23, 0.45);
-        border: 1px solid rgba(245, 158, 11, 0.2);
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(245, 158, 11, 0.35);
         border-radius: 8px;
         padding: 0.85rem 1rem;
 
@@ -417,14 +417,14 @@
             font-family: 'Cinzel', Georgia, serif;
             font-size: 0.82rem;
             font-weight: 700;
-            color: #fde68a;
+            color: #92400e;
             letter-spacing: 0.04em;
           }
 
           .amount-min-badge {
-            background: rgba(245, 158, 11, 0.15);
-            border: 1px solid rgba(245, 158, 11, 0.35);
-            color: #fef08a;
+            background: rgba(254, 243, 199, 0.8);
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            color: #b45309;
             padding: 2px 8px;
             border-radius: 4px;
             font-size: 0.72rem;
@@ -442,10 +442,10 @@
           }
 
           .amount-chip-btn {
-            background: rgba(41, 37, 36, 0.8);
-            border: 1px solid rgba(245, 158, 11, 0.25);
+            background: #fff;
+            border: 1px solid rgba(245, 158, 11, 0.35);
             border-radius: 6px;
-            color: #e2e8f0;
+            color: #44403c;
             font-family: 'Space Grotesk', -apple-system, sans-serif;
             font-size: 0.85rem;
             font-weight: 700;
@@ -456,14 +456,14 @@
 
             &:hover {
               border-color: rgba(245, 158, 11, 0.6);
-              color: #fde68a;
-              background: rgba(245, 158, 11, 0.15);
+              color: #b45309;
+              background: rgba(254, 243, 199, 0.5);
             }
 
             &.active {
-              background: linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(217, 119, 6, 0.2) 100%);
-              border-color: #f59e0b;
-              color: #fef08a;
+              background: linear-gradient(135deg, rgba(254, 243, 199, 0.95) 0%, rgba(253, 230, 138, 0.65) 100%);
+              border-color: #d97706;
+              color: #92400e;
               box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
             }
           }
@@ -473,8 +473,8 @@
           display: flex;
           align-items: center;
           position: relative;
-          background: rgba(12, 10, 9, 0.7);
-          border: 1px solid rgba(245, 158, 11, 0.25);
+          background: #fff;
+          border: 1px solid rgba(245, 158, 11, 0.35);
           border-radius: 6px;
           padding: 0.35rem 0.75rem;
           transition: border-color 0.2s ease;
@@ -503,7 +503,7 @@
             background: transparent;
             border: none;
             outline: none;
-            color: #f8fafc;
+            color: #1c1917;
             font-family: 'Space Grotesk', -apple-system, sans-serif;
             font-size: 0.88rem;
             font-weight: 600;
@@ -527,16 +527,16 @@
 
       /* PayPal Fee Support Option (Checkbox) */
       .paypal-fee-support-row {
-        background: rgba(28, 25, 23, 0.65);
-        border: 1px solid rgba(245, 158, 11, 0.25);
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(245, 158, 11, 0.35);
         border-radius: 8px;
         padding: 0.85rem 1rem;
         transition: all 0.25s ease;
 
         &.is-active {
-          background: rgba(245, 158, 11, 0.12);
-          border-color: rgba(245, 158, 11, 0.6);
-          box-shadow: 0 0 15px rgba(245, 158, 11, 0.18);
+          background: rgba(254, 243, 199, 0.55);
+          border-color: rgba(217, 119, 6, 0.55);
+          box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
         }
 
         .checkbox-fee-container {
@@ -561,15 +561,15 @@
             font-family: 'Space Grotesk', -apple-system, sans-serif;
             font-size: 0.86rem;
             font-weight: 700;
-            color: #fde68a;
+            color: #92400e;
           }
 
           .fee-addon-inline-tag {
             display: inline-flex;
             align-items: center;
-            background: rgba(234, 88, 12, 0.25);
-            border: 1px solid rgba(245, 158, 11, 0.45);
-            color: #fef08a;
+            background: rgba(254, 243, 199, 0.9);
+            border: 1px solid rgba(217, 119, 6, 0.4);
+            color: #b45309;
             padding: 3px 8px;
             border-radius: 6px;
             font-size: 0.76rem;
@@ -587,7 +587,11 @@
         position: relative;
         z-index: 10;
         margin-top: 0.25rem;
-        color-scheme: none;
+        color-scheme: light only;
+        background: #ffffff;
+        border: 1px solid rgba(245, 158, 11, 0.4);
+        border-radius: 8px;
+        padding: 0.75rem 0.65rem 0.85rem;
 
         > div {
           width: 100% !important;
@@ -596,27 +600,6 @@
 
         iframe {
           z-index: 10 !important;
-        }
-
-        /*
-         * Solo el bloque PayPal pasa a “pergamino” (modo día) cuando el formulario de tarjeta
-         * está abierto; el resto del modal sigue en tema oscuro del portal.
-         */
-        &.is-card-checkout-expanded {
-          color-scheme: light only;
-          background: linear-gradient(165deg, #fffbeb 0%, #fef3c7 42%, #fff7ed 100%);
-          border: 1px solid rgba(245, 158, 11, 0.55);
-          border-radius: 8px;
-          padding: 0.9rem 0.75rem 1rem;
-          margin-top: 0.35rem;
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.85),
-            0 6px 22px rgba(0, 0, 0, 0.45),
-            0 0 0 1px rgba(234, 88, 12, 0.08);
-
-          :is([id*='zoid'], [class*='paypal-button'], [data-funding-source]) {
-            color-scheme: light;
-          }
         }
       }
 
@@ -629,14 +612,10 @@
         padding-top: 0.25rem;
         padding-bottom: 0.5rem;
 
-        &.is-card-checkout-active {
-          display: none;
-        }
-
         .btn-paypal-copy-link {
-          background: rgba(255, 255, 255, 0.06);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          color: #e2e8f0;
+          background: rgba(255, 255, 255, 0.95);
+          border: 1px solid rgba(217, 119, 6, 0.35);
+          color: #44403c;
           font-family: 'Space Grotesk', -apple-system, sans-serif;
           font-size: 0.78rem;
           font-weight: 600;
@@ -648,9 +627,9 @@
           transition: all 0.15s ease;
 
           &:hover {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(245, 158, 11, 0.4);
-            color: #fde68a;
+            background: rgba(254, 243, 199, 0.65);
+            border-color: #d97706;
+            color: #b45309;
           }
         }
 
@@ -659,7 +638,7 @@
           &[hidden] {
             display: none !important;
           }
-          color: #a8a29e;
+          color: #78716c;
           font-size: 0.76rem;
           font-weight: 600;
           text-decoration: none;
@@ -678,11 +657,11 @@
 }
 
 /* Overlays de PayPal (dirección de facturación) montados fuera del modal */
-html.paypal-donate-card-flow {
+html.paypal-donate-modal-open {
   color-scheme: light;
 }
 
-html.paypal-donate-card-flow body > div[id*='zoid'] {
+html.paypal-donate-modal-open body > div[id*='zoid'] {
   color-scheme: light;
 }
 
