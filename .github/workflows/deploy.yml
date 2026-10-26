@@ -37,6 +37,7 @@ jobs:
       run: npm run build:gh-pages
       env:
         GITHUB_PAGES: 'true'
+        VITE_PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
 
     - name: Sync built site to repo root (legacy project Pages)
       run: |

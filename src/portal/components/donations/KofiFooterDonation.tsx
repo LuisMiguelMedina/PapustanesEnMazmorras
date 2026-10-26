@@ -1,4 +1,5 @@
 import { FC, useState, useEffect, MouseEvent } from 'react';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import './KofiFooterDonation.scss';
 
 export interface KofiFooterDonationProps {
@@ -8,7 +9,7 @@ export interface KofiFooterDonationProps {
   minAmount?: number;
 }
 
-// Obfuscated official Ko-fi target (prevents exposing personal username in plaintext and to crawlers)
+// Obfuscated official Ko-fi target (secondary/fallback channel)
 const OBFUSCATED_KOFI_TARGET = 'aHR0cHM6Ly9rby1maS5jb20vbHVpc21lZGluYTQ3ODcx';
 
 const getTargetKofiUrl = (): string => {
@@ -19,15 +20,24 @@ const getTargetKofiUrl = (): string => {
   }
 };
 
+const DEFAULT_PAYPAL_CLIENT_ID =
+  'BAA-aiHBfRBEkWGGh8umZAuwjJwpsUA104wjv6EJFoaDieVF93wwOrNXdSZjvP__hya21sARA2sWhVjUHg';
+const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || DEFAULT_PAYPAL_CLIENT_ID;
+
 export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
-  label = 'Invitar un Café',
-  sublabel = 'Apoya el servidor Foundry VTT & las crónicas',
+  label = 'Donaciones & Mecenazgo',
+  sublabel = 'Apoyo directo al servidor vía PayPal',
   suggestedAmount = '$20 MXN',
   minAmount = 20,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
   const [coverPaypalFee, setCoverPaypalFee] = useState<boolean>(false);
+
+  // Success state after PayPal capture
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [payerName, setPayerName] = useState<string>('Aventurero');
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Initialize selected amount from prop or minAmount
   const initialBase = parseFloat(suggestedAmount.replace(/[^0-9.]/g, '')) || minAmount;
@@ -45,6 +55,9 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
   // Estimated PayPal Mexico fee: ~3.95% + $4.00 MXN fixed
   const estimatedFee = Math.round((baseAmountNum * 0.0395 + 4.0) * 100) / 100;
   const totalWithFee = Math.round((baseAmountNum + estimatedFee) * 100) / 100;
+
+  // Final amount to pass to PayPal
+  const finalAmount = coverPaypalFee ? totalWithFee : baseAmountNum;
 
   // Lock body scroll while modal is active
   useEffect(() => {
@@ -84,6 +97,7 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
   const handlePresetClick = (val: number) => {
     setSelectedAmount(val);
     setCustomAmountText('');
+    setPaymentError(null);
   };
 
   const handleCustomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,6 +109,13 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
     } else {
       setSelectedAmount(0);
     }
+    setPaymentError(null);
+  };
+
+  const resetModalState = () => {
+    setIsSuccess(false);
+    setPaymentError(null);
+    setIsModalOpen(false);
   };
 
   return (
@@ -103,13 +124,17 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
       <button
         type="button"
         className="btn-kofi-fantasy-trigger"
-        onClick={() => setIsModalOpen(true)}
-        title="Apoyar el proyecto y el servidor en Ko-fi"
+        onClick={() => {
+          setIsSuccess(false);
+          setPaymentError(null);
+          setIsModalOpen(true);
+        }}
+        title="Apoyar el proyecto y el servidor en PayPal"
         aria-haspopup="dialog"
         aria-expanded={isModalOpen}
       >
         <span className="kofi-icon-badge">
-          <i className="fas fa-mug-hot" />
+          <i className="fab fa-paypal" />
         </span>
         <div className="kofi-label-stack">
           <span className="kofi-primary-text">{label}</span>
@@ -125,7 +150,7 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
           aria-modal="true"
           aria-labelledby="kofi-modal-title"
           onClick={(e) => {
-            if (e.target === e.currentTarget) setIsModalOpen(false);
+            if (e.target === e.currentTarget) resetModalState();
           }}
         >
           <div className="kofi-modal-card animate__animated animate__fadeInUp">
@@ -135,7 +160,7 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                 <i className="fas fa-dice-d20" />
               </div>
               <div className="banner-titles">
-                <span className="banner-kicker">MECENAZGO COMUNITARIO</span>
+                <span className="banner-kicker">PASARELA OFICIAL DIRECTA</span>
                 <h4 id="kofi-modal-title" className="banner-main-title">
                   Papustanes en Mazmorras
                 </h4>
@@ -143,149 +168,226 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
               <button
                 type="button"
                 className="btn-modal-dismiss"
-                onClick={() => setIsModalOpen(false)}
+                onClick={resetModalState}
                 title="Cerrar ventana (Esc)"
               >
                 <i className="fas fa-times" />
               </button>
             </div>
 
-            {/* Scrollable Modal Body */}
-            <div className="modal-body-content">
-              <p className="lead-paragraph">
-                Tus aportaciones sostienen la infraestructura del servidor en la nube de{' '}
-                <strong>Foundry VTT</strong>, el almacenamiento de fichas y la documentación del
-                lore en la <strong>Wiki del Multiverso</strong>.
-              </p>
-
-              {/* Commission & Processor Recommendation Notice */}
-              <div className="processor-tip-box">
-                <div className="tip-icon">
-                  <i className="fas fa-shield-alt" />
+            {/* If Payment Succeeded */}
+            {isSuccess ? (
+              <div className="payment-success-card animate__animated animate__zoomIn">
+                <div className="success-emblem">
+                  <i className="fas fa-check-circle" />
                 </div>
-                <div className="tip-text">
-                  <span className="tip-heading">Aportaciones Seguras y Sin Límites</span>
-                  <p>
-                    Cualquier aportación es bien recibida (mínimo sugerido de <strong>${minAmount} MXN</strong>).
-                    Puedes colaborar al instante con <strong>Apple Pay</strong>,{' '}
-                    <strong>Google Pay</strong>, tarjeta o <strong>PayPal</strong> mediante <strong>Stripe</strong>.
-                  </p>
-                </div>
-              </div>
-
-              {/* Amount Selector Section */}
-              <div className="donation-amount-section">
-                <div className="amount-section-header">
-                  <span className="amount-section-label">
-                    <i className="fas fa-coins me-1" />
-                    Monto de tu aportación:
-                  </span>
-                  <span className="amount-min-badge">
-                    Desde ${minAmount} MXN (sin límite)
-                  </span>
-                </div>
-
-                <div className="amount-chips-grid">
-                  {presets.map((preset) => (
-                    <button
-                      key={preset}
-                      type="button"
-                      className={`amount-chip-btn ${selectedAmount === preset && !customAmountText ? 'active' : ''}`}
-                      onClick={() => handlePresetClick(preset)}
-                    >
-                      ${preset} MXN
-                    </button>
-                  ))}
-                </div>
-
-                <div className="custom-amount-wrapper">
-                  <span className="currency-prefix">$</span>
-                  <input
-                    type="number"
-                    min={minAmount}
-                    step={5}
-                    value={customAmountText}
-                    onChange={handleCustomChange}
-                    placeholder={`Otro monto libre (ej. ${minAmount})`}
-                    className="custom-amount-input"
-                  />
-                  <span className="currency-suffix">MXN</span>
-                </div>
-
-                {isBelowMin && (
-                  <div className="amount-warning-text">
-                    <i className="fas fa-info-circle me-1" />
-                    El monto mínimo sugerido para cubrir procesadores bancarios es de ${minAmount} MXN.
-                  </div>
-                )}
-              </div>
-
-              {/* PayPal Fee Support Option (Checkbox) */}
-              <div className={`paypal-fee-support-row ${coverPaypalFee ? 'is-active' : ''}`}>
-                <label className="checkbox-fee-container">
-                  <input
-                    type="checkbox"
-                    className="fantasy-fee-checkbox"
-                    checked={coverPaypalFee}
-                    onChange={(e) => setCoverPaypalFee(e.target.checked)}
-                  />
-                  <span className="checkbox-text-main">
-                    Apóyame pagando la comisión de PayPal
-                  </span>
-                  {coverPaypalFee && (
-                    <span className="fee-addon-inline-tag animate__animated animate__fadeIn">
-                      <i className="fas fa-plus-circle me-1" />
-                      Incluyendo esta cantidad (+${estimatedFee.toFixed(2)} MXN) como adicional a lo que ibas a donar (Total sugerido: ${totalWithFee.toFixed(2)} MXN)
-                    </span>
-                  )}
-                </label>
-              </div>
-            </div>
-
-            {/* Pinned Modal Footer Actions */}
-            <div className="modal-footer-pinned">
-              <div className="modal-action-buttons">
-                <a
-                  href={cleanAliasPath}
-                  onClick={handleOpenKofi}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-kofi-primary-action"
-                  title="Abrir página oficial de donación en Ko-fi"
-                >
-                  <i className="fas fa-heart me-2" />
-                  <span>
-                    {coverPaypalFee
-                      ? `Donar en Ko-fi ($${totalWithFee.toFixed(2)} MXN sugeridos)`
-                      : `Donar en Ko-fi ($${baseAmountNum.toFixed(2)} MXN)`}
-                  </span>
-                  <i className="fas fa-external-link-alt ms-2 external-arrow" />
-                </a>
-
+                <h4 className="success-title">¡Ofrenda Recibida con Honor!</h4>
+                <p className="success-desc">
+                  Muchas gracias, <strong>{payerName}</strong>. Tu aportación de{' '}
+                  <span className="success-amount-badge">${finalAmount.toFixed(2)} MXN</span> ha
+                  sido procesada exitosamente y destinada directamente al sustento del servidor
+                  Foundry VTT y la Wiki de Lore.
+                </p>
                 <button
                   type="button"
-                  className="btn-kofi-copy-link"
-                  onClick={handleCopyLink}
-                  title="Copiar enlace de donación al portapapeles"
+                  className="btn-success-close"
+                  onClick={resetModalState}
                 >
-                  <i className={`fas ${copied ? 'fa-check text-success' : 'fa-copy'} me-1`} />
-                  <span>{copied ? '¡Enlace Copiado!' : 'Copiar Enlace'}</span>
+                  <i className="fas fa-dungeon me-2" />
+                  Volver a las Crónicas
                 </button>
               </div>
+            ) : (
+              <>
+                {/* Scrollable Modal Body */}
+                <div className="modal-body-content">
+                  <p className="lead-paragraph">
+                    Tus aportaciones sostienen la infraestructura del servidor en la nube de{' '}
+                    <strong>Foundry VTT</strong>, el almacenamiento de fichas y la documentación del
+                    lore en la <strong>Wiki del Multiverso</strong>.
+                  </p>
 
-              {/* Direct link footer note */}
-              <div className="modal-footer-direct-note">
-                <span>Plataforma oficial: </span>
-                <a
-                  href={cleanAliasPath}
-                  onClick={handleOpenKofi}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  ko-fi.com (Papustanes en Mazmorras)
-                </a>
-              </div>
-            </div>
+                  {/* Commission & Processor Recommendation Notice */}
+                  <div className="processor-tip-box">
+                    <div className="tip-icon">
+                      <i className="fab fa-paypal" />
+                    </div>
+                    <div className="tip-text">
+                      <span className="tip-heading">Pago Directo y Seguro con PayPal</span>
+                      <p>
+                        Cualquier aportación es bien recibida (mínimo sugerido de{' '}
+                        <strong>${minAmount} MXN</strong>). Puedes pagar al instante con saldo de{' '}
+                        <strong>PayPal</strong> o directamente con tu{' '}
+                        <strong>tarjeta de débito/crédito</strong> sin salir del portal.
+                      </p>
+                    </div>
+                  </div>
+
+                  {paymentError && (
+                    <div className="payment-error-alert animate__animated animate__shakeX">
+                      <i className="fas fa-exclamation-triangle" />
+                      <span>{paymentError}</span>
+                    </div>
+                  )}
+
+                  {/* Amount Selector Section */}
+                  <div className="donation-amount-section">
+                    <div className="amount-section-header">
+                      <span className="amount-section-label">
+                        <i className="fas fa-coins me-1" />
+                        Monto de tu aportación:
+                      </span>
+                      <span className="amount-min-badge">
+                        Desde ${minAmount} MXN (sin límite)
+                      </span>
+                    </div>
+
+                    <div className="amount-chips-grid">
+                      {presets.map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          className={`amount-chip-btn ${selectedAmount === preset && !customAmountText ? 'active' : ''}`}
+                          onClick={() => handlePresetClick(preset)}
+                        >
+                          ${preset} MXN
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="custom-amount-wrapper">
+                      <span className="currency-prefix">$</span>
+                      <input
+                        type="number"
+                        min={minAmount}
+                        step={5}
+                        value={customAmountText}
+                        onChange={handleCustomChange}
+                        placeholder={`Otro monto libre (ej. ${minAmount})`}
+                        className="custom-amount-input"
+                      />
+                      <span className="currency-suffix">MXN</span>
+                    </div>
+
+                    {isBelowMin && (
+                      <div className="amount-warning-text">
+                        <i className="fas fa-info-circle me-1" />
+                        El monto mínimo sugerido para cubrir procesadores bancarios es de ${minAmount} MXN.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* PayPal Fee Support Option (Checkbox) */}
+                  <div className={`paypal-fee-support-row ${coverPaypalFee ? 'is-active' : ''}`}>
+                    <label className="checkbox-fee-container">
+                      <input
+                        type="checkbox"
+                        className="fantasy-fee-checkbox"
+                        checked={coverPaypalFee}
+                        onChange={(e) => {
+                          setCoverPaypalFee(e.target.checked);
+                          setPaymentError(null);
+                        }}
+                      />
+                      <span className="checkbox-text-main">
+                        Apóyame pagando la comisión de PayPal
+                      </span>
+                      {coverPaypalFee && (
+                        <span className="fee-addon-inline-tag animate__animated animate__fadeIn">
+                          <i className="fas fa-plus-circle me-1" />
+                          Incluyendo comisión (+${estimatedFee.toFixed(2)} MXN) | Total: ${totalWithFee.toFixed(2)} MXN
+                        </span>
+                      )}
+                    </label>
+                  </div>
+                </div>
+
+                {/* Pinned Modal Footer Actions with Live PayPal Buttons */}
+                <div className="modal-footer-pinned">
+                  <div className="paypal-button-embed-wrapper">
+                    <PayPalScriptProvider
+                      options={{
+                        clientId: PAYPAL_CLIENT_ID,
+                        currency: 'MXN',
+                        intent: 'capture',
+                      }}
+                    >
+                      <PayPalButtons
+                        style={{
+                          layout: 'vertical',
+                          color: 'gold',
+                          shape: 'rect',
+                          label: 'donate',
+                          height: 44,
+                          tagline: false,
+                        }}
+                        forceReRender={[finalAmount]}
+                        createOrder={(_data, actions) => {
+                          return actions.order.create({
+                            intent: 'CAPTURE',
+                            purchase_units: [
+                              {
+                                description: 'Ofrenda al servidor Papustanes en Mazmorras',
+                                amount: {
+                                  currency_code: 'MXN',
+                                  value: finalAmount.toFixed(2),
+                                },
+                              },
+                            ],
+                          });
+                        }}
+                        onApprove={async (_data, actions) => {
+                          try {
+                            if (!actions.order) return;
+                            const details = await actions.order.capture();
+                            const donorName =
+                              details.payer?.name?.given_name ||
+                              details.payer?.name?.surname ||
+                              'Aventurero';
+                            setPayerName(donorName);
+                            setIsSuccess(true);
+                          } catch (err) {
+                            console.error('Capture error:', err);
+                            setPaymentError('No se pudo completar el cobro. Por favor verifica tu cuenta.');
+                          }
+                        }}
+                        onError={(err) => {
+                          console.error('PayPal Buttons error:', err);
+                          setPaymentError('Hubo un inconveniente al cargar PayPal. Revisa tu conexión.');
+                        }}
+                        onCancel={() => {
+                          setPaymentError('Operación cancelada por el usuario.');
+                        }}
+                      />
+                    </PayPalScriptProvider>
+                  </div>
+
+                  <div className="modal-secondary-actions">
+                    <button
+                      type="button"
+                      className="btn-kofi-copy-link"
+                      onClick={handleCopyLink}
+                      title="Copiar enlace de donación al portapapeles"
+                    >
+                      <i className={`fas ${copied ? 'fa-check text-success' : 'fa-copy'} me-1`} />
+                      <span>{copied ? '¡Enlace Copiado!' : 'Copiar Enlace'}</span>
+                    </button>
+
+                    <a
+                      href={cleanAliasPath}
+                      onClick={handleOpenKofi}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-kofi-secondary-link"
+                      title="Donar alternativamente a través de Ko-fi"
+                    >
+                      <i className="fas fa-mug-hot me-1" />
+                      <span>O donar vía Ko-fi</span>
+                    </a>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
