@@ -594,52 +594,6 @@ export const InteractiveCalendar: FC = () => {
             </button>
           </div>
         </div>
-
-        {/* Legend pills matching the user's manual design */}
-        <div className="calendar-legend-container">
-          <div className="legend-row types-row">
-            {tags.filter((t) => t.category === 'TYPE').map((tag) => (
-              <span
-                key={tag.id}
-                className={`legend-pill ${isDebug ? 'legend-pill-debug' : ''}`}
-                style={{ background: tag.color, color: tag.textColor }}
-                onClick={() => isDebug && handleOpenTagManager(tag)}
-                title={isDebug ? `Clic para editar "${tag.label}" (?debug=1)` : undefined}
-              >
-                {tag.label}
-                {isDebug && <i className="fas fa-pen ms-1 debug-tag-icon" />}
-              </span>
-            ))}
-          </div>
-          <div className="legend-row authors-row">
-            {tags.filter((t) => t.category === 'AUTHOR').map((tag) => (
-              <span
-                key={tag.id}
-                className={`legend-pill ${isDebug ? 'legend-pill-debug' : ''}`}
-                style={{ background: tag.color, color: tag.textColor }}
-                onClick={() => isDebug && handleOpenTagManager(tag)}
-                title={isDebug ? `Clic para editar "${tag.label}" (?debug=1)` : undefined}
-              >
-                {tag.label}
-                {isDebug && <i className="fas fa-pen ms-1 debug-tag-icon" />}
-              </span>
-            ))}
-          </div>
-
-          {isDebug && (
-            <div className="legend-debug-toolbar mt-2 d-flex justify-content-center">
-              <button
-                type="button"
-                className="btn-debug-manage-tags"
-                onClick={() => handleOpenTagManager()}
-                title="Administrar etiquetas: crear, editar o eliminar (?debug=1)"
-              >
-                <i className="fas fa-tags me-1" />
-                <span>Gestionar Etiquetas</span>
-              </button>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* ---------------- 2. CALENDAR MONTH GRID ---------------- */}
@@ -727,7 +681,59 @@ export const InteractiveCalendar: FC = () => {
         </div>
       </div>
 
-      {/* ---------------- 3. CREATE / EDIT EVENT MODAL ---------------- */}
+      {/* ---------------- 3. BOTTOM LEGEND BAR ---------------- */}
+      <div className="calendar-bottom-legend">
+        <span className="legend-indicator">
+          <i className="fas fa-tags me-1" />
+          <span className="legend-indicator-text">Etiquetas</span>
+        </span>
+
+        <div className="legend-flat-pills">
+          {tags.filter((t) => t.category === 'TYPE').map((tag) => (
+            <span
+              key={tag.id}
+              className={`legend-pill ${isDebug ? 'legend-pill-debug' : ''}`}
+              style={{ background: tag.color, color: tag.textColor || '#ffffff' }}
+              onClick={() => isDebug && handleOpenTagManager(tag)}
+              title={isDebug ? `Clic para editar "${tag.label}" (?debug=1)` : `${tag.label} (Tipo de Evento)`}
+            >
+              {tag.label}
+              {isDebug && <i className="fas fa-pen ms-1 debug-tag-icon" />}
+            </span>
+          ))}
+
+          {tags.some((t) => t.category === 'TYPE') && tags.some((t) => t.category === 'AUTHOR') && (
+            <span className="legend-pill-separator" aria-hidden="true">•</span>
+          )}
+
+          {tags.filter((t) => t.category === 'AUTHOR').map((tag) => (
+            <span
+              key={tag.id}
+              className={`legend-pill ${isDebug ? 'legend-pill-debug' : ''}`}
+              style={{ background: tag.color, color: tag.textColor || '#ffffff' }}
+              onClick={() => isDebug && handleOpenTagManager(tag)}
+              title={isDebug ? `Clic para editar "${tag.label}" (?debug=1)` : `${tag.label} (DM / Autor)`}
+            >
+              {tag.label}
+              {isDebug && <i className="fas fa-pen ms-1 debug-tag-icon" />}
+            </span>
+          ))}
+        </div>
+
+        {isDebug && (
+          <button
+            type="button"
+            className="btn-debug-manage-tags"
+            onClick={() => handleOpenTagManager()}
+            title="Administrar etiquetas: crear, editar o eliminar (?debug=1)"
+          >
+            <i className="fas fa-sliders-h me-1" />
+            <span>Gestionar (?debug=1)</span>
+          </button>
+        )}
+      </div>
+
+      {/* ---------------- 4. CREATE / EDIT EVENT MODAL ---------------- */}
       {showEventModal && (
         <div className="calendar-modal-backdrop" onClick={() => setShowEventModal(false)}>
           <div className="calendar-modal-container" onClick={(e) => e.stopPropagation()}>
