@@ -1,8 +1,9 @@
 import { FC, useState, useEffect, MouseEvent } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
-import './KofiFooterDonation.scss';
+import './PayPalFooterDonation.scss';
 
-export interface KofiFooterDonationProps {
+export interface PayPalFooterDonationProps {
+  communityName?: string;
   label?: string;
   sublabel?: string;
   suggestedAmount?: string;
@@ -24,7 +25,8 @@ const DEFAULT_PAYPAL_CLIENT_ID =
   'BAA-aiHBfRBEkWGGh8umZAuwjJwpsUA104wjv6EJFoaDieVF93wwOrNXdSZjvP__hya21sARA2sWhVjUHg';
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || DEFAULT_PAYPAL_CLIENT_ID;
 
-export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
+export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
+  communityName = 'Papustanes en Mazmorras',
   label = 'Invitar un Café',
   sublabel = 'Apoya el servidor Foundry VTT & las crónicas',
   suggestedAmount = '$20 MXN',
@@ -119,50 +121,50 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
   };
 
   return (
-    <div className="kofi-footer-donation-wrapper">
+    <div className="paypal-footer-donation-wrapper">
       {/* Footer Interactive Trigger Button */}
       <button
         type="button"
-        className="btn-kofi-fantasy-trigger"
+        className="btn-paypal-fantasy-trigger"
         onClick={() => {
           setIsSuccess(false);
           setPaymentError(null);
           setIsModalOpen(true);
         }}
-        title="Invitar un café para apoyar el proyecto y el servidor"
+        title={`Invitar un café para apoyar a ${communityName} y su servidor`}
         aria-haspopup="dialog"
         aria-expanded={isModalOpen}
       >
-        <span className="kofi-icon-badge">
+        <span className="paypal-icon-badge">
           <i className="fas fa-mug-hot" />
         </span>
-        <div className="kofi-label-stack">
-          <span className="kofi-primary-text">{label}</span>
-          <span className="kofi-subtext">{sublabel}</span>
+        <div className="paypal-label-stack">
+          <span className="paypal-primary-text">{label}</span>
+          <span className="paypal-subtext">{sublabel}</span>
         </div>
       </button>
 
       {/* Medieval Fantasy Informative Modal */}
       {isModalOpen && (
         <div
-          className="kofi-modal-backdrop"
+          className="paypal-modal-backdrop"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="kofi-modal-title"
+          aria-labelledby="paypal-modal-title"
           onClick={(e) => {
             if (e.target === e.currentTarget) resetModalState();
           }}
         >
-          <div className="kofi-modal-card animate__animated animate__fadeInUp">
+          <div className="paypal-modal-card animate__animated animate__fadeInUp">
             {/* Pinned Modal Header Banner */}
             <div className="modal-header-banner">
               <div className="banner-emblem">
                 <i className="fas fa-mug-hot" />
               </div>
               <div className="banner-titles">
-                <span className="banner-kicker">MECENAZGO COMUNITARIO</span>
-                <h4 id="kofi-modal-title" className="banner-main-title">
-                  Papustanes en Mazmorras
+                <span className="banner-kicker">APOYO COMUNITARIO</span>
+                <h4 id="paypal-modal-title" className="banner-main-title">
+                  {communityName}
                 </h4>
               </div>
               <button
@@ -186,7 +188,7 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                   Muchas gracias, <strong>{payerName}</strong>. Tu aportación de{' '}
                   <span className="success-amount-badge">${finalAmount.toFixed(2)} MXN</span> ha
                   sido procesada exitosamente como soporte digital para el servidor Foundry VTT y
-                  la Wiki de Lore.
+                  el mantenimiento de la página.
                 </p>
                 <button
                   type="button"
@@ -194,7 +196,7 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                   onClick={resetModalState}
                 >
                   <i className="fas fa-dungeon me-2" />
-                  Volver a las Crónicas
+                  Volver a {communityName}
                 </button>
               </div>
             ) : (
@@ -203,8 +205,8 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                 <div className="modal-body-content">
                   <p className="lead-paragraph">
                     Tus cafés sostienen la infraestructura del servidor en la nube de{' '}
-                    <strong>Foundry VTT</strong>, el almacenamiento de fichas y la documentación del
-                    lore en la <strong>Wiki del Multiverso</strong>.
+                    <strong>Foundry VTT</strong>, el almacenamiento de fichas, las crónicas y el{' '}
+                    <strong>mantenimiento de la página</strong>.
                   </p>
 
                   {/* Commission & Processor Recommendation Notice */}
@@ -327,7 +329,7 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                             intent: 'CAPTURE',
                             purchase_units: [
                               {
-                                description: 'Invitar un café - Apoyo al servidor Papustanes en Mazmorras',
+                                description: `Invitar un café - Apoyo a ${communityName}`,
                                 amount: {
                                   currency_code: 'MXN',
                                   value: finalAmount.toFixed(2),
@@ -340,8 +342,8 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                                 },
                                 items: [
                                   {
-                                    name: 'Invitar un café (Soporte digital del servidor)',
-                                    description: 'Mecenazgo para Foundry VTT y Wiki de Lore',
+                                    name: `Invitar un café (Soporte digital ${communityName})`,
+                                    description: 'Soporte para Foundry VTT y mantenimiento de la página',
                                     unit_amount: {
                                       currency_code: 'MXN',
                                       value: finalAmount.toFixed(2),
@@ -383,7 +385,7 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                   <div className="modal-secondary-actions">
                     <button
                       type="button"
-                      className="btn-kofi-copy-link"
+                      className="btn-paypal-copy-link"
                       onClick={handleCopyLink}
                       title="Copiar enlace de apoyo al portapapeles"
                     >
@@ -396,7 +398,7 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                       onClick={handleOpenKofi}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn-kofi-secondary-link"
+                      className="btn-paypal-secondary-link"
                       title="Colaborar alternativamente a través de Ko-fi"
                     >
                       <i className="fas fa-mug-hot me-1" />
@@ -412,3 +414,6 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
     </div>
   );
 };
+
+// Backward compatibility alias
+export { PayPalFooterDonation as KofiFooterDonation };

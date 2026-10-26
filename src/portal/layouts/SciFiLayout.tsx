@@ -2,7 +2,7 @@ import { FC, useState, useEffect } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { ref, onValue } from 'firebase/database';
 import { db } from '../firebase';
-import { KofiFooterDonation } from '../components/donations/KofiFooterDonation';
+import { PayPalFooterDonation } from '../components/donations/PayPalFooterDonation';
 import './SciFiLayout.scss';
 
 const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
@@ -80,9 +80,10 @@ export const SciFiLayout: FC = () => {
       <footer className="scifi-footer fantasy-footer">
         <div className="footer-inner">
           <div className="footer-donation-block">
-            <KofiFooterDonation
+            <PayPalFooterDonation
+              communityName="Papustanes en Mazmorras"
               label="Invitar un Café"
-              sublabel="Apoya el servidor & las crónicas"
+              sublabel="Apoya el servidor Foundry VTT & las crónicas"
               suggestedAmount="$20 MXN"
               minAmount={20}
             />

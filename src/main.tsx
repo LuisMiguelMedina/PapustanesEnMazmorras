@@ -21,14 +21,14 @@ import { Settings } from './portal/pages/Settings';
 import { CampaignHub } from './portal/pages/CampaignHub';
 import { WikiArticleView } from './portal/pages/WikiArticleView';
 
-// Obfuscated official Ko-fi target
-const KOFI_DESTINATION_B64 = 'aHR0cHM6Ly9rby1maS5jb20vbHVpc21lZGluYTQ3ODcx';
+// Obfuscated official fallback destination
+const BACKUP_DONATION_TARGET_B64 = 'aHR0cHM6Ly9rby1maS5jb20vbHVpc21lZGluYTQ3ODcx';
 
-// Clean redirect component that bridges /donar and /kofi to the official destination
-const KofiRedirect: FC = () => {
+// Clean redirect component that bridges /donar, /paypal and /kofi to destination
+const DonationRedirect: FC = () => {
   useEffect(() => {
     try {
-      window.location.replace(atob(KOFI_DESTINATION_B64));
+      window.location.replace(atob(BACKUP_DONATION_TARGET_B64));
     } catch {
       window.location.replace('https://ko-fi.com');
     }
@@ -59,7 +59,7 @@ const KofiRedirect: FC = () => {
       >
         Papustanes en Mazmorras
       </h3>
-      <p style={{ color: '#cbd5e1' }}>Redirigiendo a la plataforma oficial de Ko-fi...</p>
+      <p style={{ color: '#cbd5e1' }}>Redirigiendo a la plataforma oficial de apoyo comunitario...</p>
     </div>
   );
 };
@@ -88,8 +88,9 @@ const router = createBrowserRouter(
         },
 
         // 2. Donation Alias Routes (obfuscates personal username behind clean /donar alias)
-        { path: 'donar', element: <KofiRedirect /> },
-        { path: 'kofi', element: <KofiRedirect /> },
+        { path: 'donar', element: <DonationRedirect /> },
+        { path: 'paypal', element: <DonationRedirect /> },
+        { path: 'kofi', element: <DonationRedirect /> },
 
         // 3. Auth routes
         { path: 'login', element: <Login /> },

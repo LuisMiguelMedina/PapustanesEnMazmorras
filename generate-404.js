@@ -53,12 +53,12 @@ spaRoutes.forEach((route) => {
 });
 
 // Dedicated fast redirect routes for donations (obfuscates personal username)
-const redirectRoutes = ['donar', 'kofi'];
+const redirectRoutes = ['donar', 'paypal', 'kofi'];
 const redirectHtml = `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>Papustanes en Mazmorras - Donaciones</title>
+  <title>Papustanes en Mazmorras - Apoyo Comunitario</title>
   <meta http-equiv="refresh" content="0; url=https://ko-fi.com/luismedina47871">
   <script>
     window.location.replace("https://ko-fi.com/luismedina47871");
@@ -66,7 +66,7 @@ const redirectHtml = `<!DOCTYPE html>
 </head>
 <body style="background:#0c0a09;color:#fde68a;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;">
   <h2>Papustanes en Mazmorras</h2>
-  <p>Redirigiendo a Ko-fi...</p>
+  <p>Redirigiendo a la plataforma oficial de apoyo comunitario...</p>
 </body>
 </html>`;
 
