@@ -32,7 +32,9 @@ const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || DEFAULT_PAYPAL
  */
 const PAYPAL_SDK_LOCALE = 'es_MX';
 const PAYPAL_ORDER_LOCALE = 'es-MX';
-const PAYPAL_CARD_FORM_MIN_HEIGHT_PX = 110;
+/** Solo el formulario expandido de tarjeta supera esta altura (no los dos botones). */
+const PAYPAL_CARD_FORM_MIN_HEIGHT_PX = 240;
+const PAYPAL_CARD_FORM_COLLAPSED_HEIGHT_PX = 130;
 
 const isCardFundingSource = (fundingSource: unknown): boolean => {
   const value = String(fundingSource ?? '').toLowerCase();
@@ -140,8 +142,11 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
     if (!isModalOpen || !node) return;
 
     const syncExpanded = () => {
-      if (node.offsetHeight >= PAYPAL_CARD_FORM_MIN_HEIGHT_PX) {
+      const height = node.offsetHeight;
+      if (height >= PAYPAL_CARD_FORM_MIN_HEIGHT_PX) {
         setIsCardCheckoutActive(true);
+      } else if (height <= PAYPAL_CARD_FORM_COLLAPSED_HEIGHT_PX) {
+        setIsCardCheckoutActive(false);
       }
     };
 
@@ -216,7 +221,7 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
       {/* Medieval Fantasy Informative Modal */}
       {isModalOpen && (
         <div
-          className={`paypal-modal-backdrop${isCardCheckoutActive ? ' is-paypal-card-checkout' : ''}`}
+          className="paypal-modal-backdrop"
           role="dialog"
           aria-modal="true"
           aria-labelledby="paypal-modal-title"
@@ -270,9 +275,7 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
               </div>
             ) : (
               /* Unified Scrollable Modal Body */
-              <div
-                className={`modal-body-content${isCardCheckoutActive ? ' is-paypal-card-checkout' : ''}`}
-              >
+              <div className="modal-body-content">
                 <p className="lead-paragraph">
                   Tus cafés sostienen la infraestructura del servidor en la nube de{' '}
                   <strong>Foundry VTT</strong>, el almacenamiento de fichas y el{' '}
