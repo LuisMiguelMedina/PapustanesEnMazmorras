@@ -39,6 +39,15 @@ export function useWikiViewModel(
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const fetchCategories = useCallback(() => {
+    const catRes = WikiDataAccess.ListCategories(campaignID);
+    if (catRes.CodeNumber === 200 && catRes.Result) {
+      setCategories(catRes.Result);
+    } else {
+      setCategories([]);
+    }
+  }, [campaignID]);
+
   // Load campaign and categories once per campaignID
   useEffect(() => {
     const campRes = CampaignDataAccess.Find({ CampaignID: campaignID });
@@ -48,13 +57,8 @@ export function useWikiViewModel(
       setCampaign(null);
     }
 
-    const catRes = WikiDataAccess.ListCategories(campaignID);
-    if (catRes.CodeNumber === 200 && catRes.Result) {
-      setCategories(catRes.Result);
-    } else {
-      setCategories([]);
-    }
-  }, [campaignID]);
+    fetchCategories();
+  }, [campaignID, fetchCategories]);
 
   // Load articles list according to category filter
   const fetchArticles = useCallback(() => {
@@ -80,6 +84,11 @@ export function useWikiViewModel(
   useEffect(() => {
     fetchArticles();
   }, [fetchArticles]);
+
+  const handleRefresh = useCallback(() => {
+    fetchArticles();
+    fetchCategories();
+  }, [fetchArticles, fetchCategories]);
 
   // Resolve and load active article
   useEffect(() => {
@@ -132,6 +141,6 @@ export function useWikiViewModel(
     setSearchQuery,
     setSelectedCategory,
     resolveCanonicalSlug,
-    refresh: fetchArticles,
+    refresh: handleRefresh,
   };
 }

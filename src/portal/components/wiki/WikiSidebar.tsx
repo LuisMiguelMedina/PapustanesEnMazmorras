@@ -14,6 +14,7 @@ export interface WikiSidebarProps {
   searchResults: WikiArticleBase[];
   onSearchChange: (q: string) => void;
   onSelectCategory: (cat: string | null) => void;
+  onNewArticle?: () => void;
 }
 
 export const WikiSidebar: FC<WikiSidebarProps> = ({
@@ -26,6 +27,7 @@ export const WikiSidebar: FC<WikiSidebarProps> = ({
   searchResults,
   onSearchChange,
   onSelectCategory,
+  onNewArticle,
 }) => {
   const [showSearchDropdown, setShowSearchDropdown] = useState<boolean>(false);
 
@@ -55,6 +57,18 @@ export const WikiSidebar: FC<WikiSidebarProps> = ({
           <i className="fas fa-landmark me-2" />
           <span>Portal Principal / Home Wiki</span>
         </Link>
+
+        {onNewArticle && (
+          <button
+            type="button"
+            className="sidebar-new-article-btn"
+            onClick={onNewArticle}
+            title="Redactar un nuevo artículo o documento para esta Wiki"
+          >
+            <i className="fas fa-file-circle-plus me-2" />
+            <span>+ Nuevo Artículo</span>
+          </button>
+        )}
       </div>
 
       <div className="sidebar-search-box">

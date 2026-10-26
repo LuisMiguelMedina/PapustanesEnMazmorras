@@ -4,11 +4,9 @@
  * and contain zero unhandled throw statements.
  */
 
-import { BTTF_CATEGORIES_SEED, BTTF_WIKI_SEED } from '../data/bttf-wiki.seed';
+import { BTTF_WIKI_SEED } from '../data/bttf-wiki.seed';
 import {
-  EONES_CATEGORIES_SEED,
   EONES_WIKI_SEED,
-  GOLDEN_21_CATEGORIES_SEED,
   GOLDEN_21_WIKI_SEED,
 } from '../data/multiverse-wiki.seed';
 import { ResponseObject } from '../models/Common/TransactionModels';
@@ -22,54 +20,96 @@ import { CampaignDataAccess } from './CampaignDataAccess';
 
 export class WikiDataAccess {
   /**
-   * Helper to retrieve all articles for a specific campaign, including seeds and fallbacks.
+   * Helper to retrieve all articles for a specific campaign, merging base seeds,
+   * dynamically generated fallbacks for custom campaigns, and user created/edited articles.
    */
-  private static getArticlesForCampaign(campaignID: string): WikiArticleBase[] {
+  public static getArticlesForCampaign(campaignID: string): WikiArticleBase[] {
+    let baseArticles: WikiArticleBase[] = [];
+
     if (campaignID === 'bttf') {
-      return [...BTTF_WIKI_SEED];
-    }
-    if (campaignID === 'golden-21') {
-      return [...GOLDEN_21_WIKI_SEED];
-    }
-    if (campaignID === 'cronicas-eones') {
-      return [...EONES_WIKI_SEED];
-    }
-
-    // Dynamic fallback for any campaign registered in CampaignDataAccess
-    const campRes = CampaignDataAccess.Find({ CampaignID: campaignID });
-    if (campRes.CodeNumber === 302 && campRes.Result) {
-      const camp = campRes.Result;
-      const defaultSlug = camp.CampaignWikiHomeSlug || camp.CampaignSlug || camp.CampaignID;
-      return [
-        {
-          ArticleID: `art_${camp.CampaignID}_overview`,
-          CampaignID: camp.CampaignID,
-          ArticleSlug: defaultSlug,
-          ArticleTitle: camp.CampaignTitle,
-          ArticleSubtitle: camp.CampaignSystem,
-          ArticleCategories: ['Categoría:Expedientes'],
-          ArticleContent: `## ${camp.CampaignTitle}\n\n${camp.CampaignDescription}\n\n### Expediente de Campaña\n\n- **Sistema**: ${camp.CampaignSystem}\n- **Game Master**: ${camp.CampaignGameMaster}\n- **Fecha de Inicio**: ${camp.CampaignStartDate || 'Por anunciar'}\n- **Jugadores**: ${camp.CampaignPlayerCount ?? 'TBD'}\n- **Sesiones**: ${camp.CampaignSessionCount ?? 0}\n\n> [!NOTE]\n> La documentación y crónicas de este universo se encuentran en recopilación por el Game Master.`,
-          ArticleInfobox: {
-            InfoboxType: 'GENERAL',
-            Title: camp.CampaignTitle,
-            ImageUrl: camp.CampaignCoverUrl,
-            ImageCaption: camp.CampaignSystem,
-            Properties: [
-              { Key: 'Game Master', Value: camp.CampaignGameMaster },
-              { Key: 'Sistema', Value: camp.CampaignSystem },
-              { Key: 'Estado', Value: camp.CampaignStatus },
-            ],
+      baseArticles = [...BTTF_WIKI_SEED];
+    } else if (campaignID === 'golden-21') {
+      baseArticles = [...GOLDEN_21_WIKI_SEED];
+    } else if (campaignID === 'cronicas-eones') {
+      baseArticles = [...EONES_WIKI_SEED];
+    } else {
+      // Dynamic fallback for any campaign registered in CampaignDataAccess
+      const campRes = CampaignDataAccess.Find({ CampaignID: campaignID });
+      if (campRes.CodeNumber === 302 && campRes.Result) {
+        const camp = campRes.Result;
+        const defaultSlug =
+          camp.CampaignWikiHomeSlug || camp.CampaignSlug || camp.CampaignID.toLowerCase();
+        baseArticles = [
+          {
+            ArticleID: `art_${camp.CampaignID}_overview`,
+            CampaignID: camp.CampaignID,
+            ArticleSlug: defaultSlug,
+            ArticleTitle: camp.CampaignTitle,
+            ArticleSubtitle: camp.CampaignSystem,
+            ArticleCategories: ['Categoría:Expedientes', 'Categoría:Lore'],
+            ArticleContent: `== ${camp.CampaignTitle} ==\n\n${
+              camp.CampaignDescription ||
+              'Bienvenido al archivo de expedientes y crónicas de esta campaña.'
+            }\n\n=== Expediente de Campaña ===\n\n- **Sistema**: ${camp.CampaignSystem}\n- **Game Master**: ${
+              camp.CampaignGameMaster || 'DM'
+            }\n- **Fecha de Inicio**: ${camp.CampaignStartDate || 'Por anunciar'}\n- **Jugadores**: ${
+              camp.CampaignPlayerCount ?? 'TBD'
+            }\n- **Sesiones**: ${camp.CampaignSessionCount ?? 0}\n\n> [!NOTE]\n> Esta campaña cuenta con su propia Wiki modular. Puede agregar nuevos artículos, redactar con el editor visual básico o en código Markdown, e insertar lectores de PDF interactivos con visor Adobe Acrobat.`,
+            ArticleInfobox: {
+              InfoboxType: 'GENERAL',
+              Title: camp.CampaignTitle,
+              ImageUrl: camp.CampaignCoverUrl,
+              ImageCaption: camp.CampaignSystem,
+              Properties: [
+                { Key: 'Game Master', Value: camp.CampaignGameMaster },
+                { Key: 'Sistema', Value: camp.CampaignSystem },
+                { Key: 'Estado', Value: camp.CampaignStatus },
+              ],
+            },
+            ArticleAliases: [camp.CampaignID, camp.CampaignSlug, 'home', 'inicio'],
+            ArticleRelatedSlugs: [],
+            ArticleIsRedirect: false,
+            ArticleRedirectTarget: null,
+            LastModified: 'Reciente',
           },
-          ArticleAliases: [camp.CampaignID, camp.CampaignSlug],
-          ArticleRelatedSlugs: [],
-          ArticleIsRedirect: false,
-          ArticleRedirectTarget: null,
-          LastModified: 'Reciente',
-        },
-      ];
+        ];
+      }
     }
 
-    return [];
+    // Merge custom articles from localStorage
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const storageKey = `wiki_custom_articles_${campaignID}`;
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+          const customList: WikiArticleBase[] = JSON.parse(stored);
+          if (Array.isArray(customList)) {
+            const slugMap = new Map<string, WikiArticleBase>();
+            baseArticles.forEach((a) => slugMap.set(a.ArticleSlug, a));
+            customList.forEach((a) => slugMap.set(a.ArticleSlug, a));
+            baseArticles = Array.from(slugMap.values());
+          }
+        }
+
+        // Apply any single article content override
+        baseArticles = baseArticles.map((art) => {
+          const overrideKey = `wiki_override_${campaignID}_${art.ArticleSlug}`;
+          const savedContent = localStorage.getItem(overrideKey);
+          if (savedContent) {
+            return {
+              ...art,
+              ArticleContent: savedContent,
+              LastModified: 'Modificado por el Usuario',
+            };
+          }
+          return art;
+        });
+      } catch {
+        // Fallback gracefully
+      }
+    }
+
+    return baseArticles;
   }
 
   /**
@@ -124,31 +164,13 @@ export class WikiDataAccess {
         };
       }
 
-      // Check if user has local custom edits (e.g. inserted PDFs from editor)
-      let resolvedArticle = article;
-      try {
-        if (typeof window !== 'undefined' && window.localStorage) {
-          const overrideKey = `wiki_override_${find.CampaignID}_${canonicalSlug}`;
-          const saved = localStorage.getItem(overrideKey);
-          if (saved) {
-            resolvedArticle = {
-              ...article,
-              ArticleContent: saved,
-              LastModified: 'Modificado por el Usuario',
-            };
-          }
-        }
-      } catch {
-        // Fallback gracefully to default seed
-      }
-
       return {
         CodeNumber: 302,
         CodeName: 'Found',
         Message: 'Article found successfully.',
         ErrorNumber: null,
         ServerName: 'local-portal',
-        Result: resolvedArticle,
+        Result: article,
       };
     } catch {
       return {
@@ -213,26 +235,36 @@ export class WikiDataAccess {
   }
 
   /**
-   * Lists available wiki categories for a campaign.
+   * Lists available wiki categories dynamically extracted from campaign articles.
    */
   public static ListCategories(campaignID: string): ResponseObject<WikiCategoryBase[]> {
     try {
-      let categories: WikiCategoryBase[] = [];
-      if (campaignID === 'bttf') {
-        categories = BTTF_CATEGORIES_SEED;
-      } else if (campaignID === 'golden-21') {
-        categories = GOLDEN_21_CATEGORIES_SEED;
-      } else if (campaignID === 'cronicas-eones') {
-        categories = EONES_CATEGORIES_SEED;
-      } else {
-        categories = [
-          {
-            CategoryID: 'categoria-expedientes',
-            CategoryName: 'Categoría:Expedientes',
-            ArticleCount: 1,
-          },
-        ];
+      const articles = this.getArticlesForCampaign(campaignID);
+      const catCounts = new Map<string, number>();
+
+      articles.forEach((art) => {
+        if (!art.ArticleIsRedirect && art.ArticleCategories) {
+          art.ArticleCategories.forEach((cat) => {
+            const cleanCat = cat.trim();
+            if (cleanCat) {
+              catCounts.set(cleanCat, (catCounts.get(cleanCat) || 0) + 1);
+            }
+          });
+        }
+      });
+
+      if (catCounts.size === 0) {
+        catCounts.set('Categoría:Expedientes', 1);
+        catCounts.set('Categoría:Lore', 1);
       }
+
+      const categories: WikiCategoryBase[] = Array.from(catCounts.entries()).map(
+        ([name, count], index) => ({
+          CategoryID: `cat_${campaignID}_${index}_${name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+          CategoryName: name,
+          ArticleCount: count,
+        }),
+      );
 
       return {
         CodeNumber: 200,
@@ -255,6 +287,49 @@ export class WikiDataAccess {
   }
 
   /**
+   * Creates or registers a new wiki article in the specified campaign.
+   */
+  public static CreateArticle(article: WikiArticleBase): ResponseObject<WikiArticleBase> {
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) {
+        return {
+          CodeNumber: 500,
+          CodeName: 'InternalServerError',
+          Message: 'LocalStorage no disponible.',
+          ErrorNumber: 500,
+          ServerName: 'local-portal',
+          Result: null,
+        };
+      }
+
+      const storageKey = `wiki_custom_articles_${article.CampaignID}`;
+      const existing = this.getArticlesForCampaign(article.CampaignID);
+      const filtered = existing.filter((a) => a.ArticleSlug !== article.ArticleSlug);
+      const updatedList = [article, ...filtered];
+
+      localStorage.setItem(storageKey, JSON.stringify(updatedList));
+
+      return {
+        CodeNumber: 201,
+        CodeName: 'Created',
+        Message: 'Artículo creado exitosamente.',
+        ErrorNumber: null,
+        ServerName: 'local-portal',
+        Result: article,
+      };
+    } catch {
+      return {
+        CodeNumber: 500,
+        CodeName: 'InternalServerError',
+        Message: 'Error al crear el artículo.',
+        ErrorNumber: 500,
+        ServerName: 'local-portal',
+        Result: null,
+      };
+    }
+  }
+
+  /**
    * Persists updated article markdown content into localStorage for client-side editing.
    */
   public static SaveArticleContent(
@@ -267,9 +342,71 @@ export class WikiDataAccess {
       const canonicalSlug = this.ResolveAlias(campaignID, articleSlug);
       const overrideKey = `wiki_override_${campaignID}_${canonicalSlug}`;
       localStorage.setItem(overrideKey, content);
+
+      // Also sync into custom articles array if present
+      const storageKey = `wiki_custom_articles_${campaignID}`;
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        try {
+          const list: WikiArticleBase[] = JSON.parse(stored);
+          const target = list.find((a) => a.ArticleSlug === canonicalSlug);
+          if (target) {
+            target.ArticleContent = content;
+            target.LastModified = 'Modificado por el Usuario';
+            localStorage.setItem(storageKey, JSON.stringify(list));
+          }
+        } catch {
+          // ignore
+        }
+      }
+
       return true;
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * Deletes a wiki article from custom articles.
+   */
+  public static DeleteArticle(campaignID: string, articleSlug: string): ResponseObject<boolean> {
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) {
+        return {
+          CodeNumber: 500,
+          CodeName: 'InternalServerError',
+          Message: 'LocalStorage no disponible.',
+          ErrorNumber: 500,
+          ServerName: 'local-portal',
+          Result: false,
+        };
+      }
+
+      const canonicalSlug = this.ResolveAlias(campaignID, articleSlug);
+      const storageKey = `wiki_custom_articles_${campaignID}`;
+      const existing = this.getArticlesForCampaign(campaignID);
+      const filtered = existing.filter((a) => a.ArticleSlug !== canonicalSlug);
+
+      localStorage.setItem(storageKey, JSON.stringify(filtered));
+      localStorage.removeItem(`wiki_override_${campaignID}_${canonicalSlug}`);
+
+      return {
+        CodeNumber: 200,
+        CodeName: 'OK',
+        Message: 'Artículo eliminado correctamente.',
+        ErrorNumber: null,
+        ServerName: 'local-portal',
+        Result: true,
+      };
+    } catch {
+      return {
+        CodeNumber: 500,
+        CodeName: 'InternalServerError',
+        Message: 'Error al eliminar el artículo.',
+        ErrorNumber: 500,
+        ServerName: 'local-portal',
+        Result: false,
+      };
     }
   }
 

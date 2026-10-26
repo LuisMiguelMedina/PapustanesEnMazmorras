@@ -1,5 +1,5 @@
 import { FC, useState, useMemo, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { WikiContentRenderer } from '../components/wiki/WikiContentRenderer';
 import { WikiInfobox } from '../components/wiki/WikiInfobox';
 import { WikiSidebar } from '../components/wiki/WikiSidebar';
@@ -7,11 +7,14 @@ import { WikiHomeView } from '../components/wiki/WikiHomeView';
 import { WikiTableOfContents } from '../components/wiki/WikiTableOfContents';
 import { WikiAudioNarrator } from '../components/wiki/WikiAudioNarrator';
 import { WikiArticleEditorModal } from '../components/wiki/WikiArticleEditorModal';
+import { WikiNewArticleModal } from '../components/wiki/WikiNewArticleModal';
 import { extractHeadings } from '../components/wiki/wikiHelpers';
+import { WikiDataAccess } from '../dataAccess/WikiDataAccess';
 import { useWikiViewModel } from '../viewModels/useWikiViewModel';
 import './WikiArticleView.scss';
 
 export const WikiArticleView: FC = () => {
+  const navigate = useNavigate();
   const { campaignID = 'bttf', articleSlug } = useParams<{
     campaignID?: string;
     articleSlug?: string;
@@ -30,12 +33,14 @@ export const WikiArticleView: FC = () => {
     setSearchQuery,
     setSelectedCategory,
     resolveCanonicalSlug,
+    refresh,
   } = useWikiViewModel(campaignID, articleSlug);
 
   const isHomeView = !articleSlug || articleSlug === 'home';
 
   const [customContent, setCustomContent] = useState<string | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
+  const [isNewArticleOpen, setIsNewArticleOpen] = useState<boolean>(false);
 
   useEffect(() => {
     setCustomContent(null);
@@ -86,6 +91,7 @@ export const WikiArticleView: FC = () => {
         searchResults={searchResults}
         onSearchChange={setSearchQuery}
         onSelectCategory={setSelectedCategory}
+        onNewArticle={() => setIsNewArticleOpen(true)}
       />
 
       <main className="wiki-main-viewport">
@@ -116,6 +122,7 @@ export const WikiArticleView: FC = () => {
             categories={categories}
             articles={articles}
             campaignID={campaignID}
+            onNewArticle={() => setIsNewArticleOpen(true)}
           />
         ) : currentArticle ? (
           <>
@@ -138,15 +145,46 @@ export const WikiArticleView: FC = () => {
                   <i className="fas fa-folder-open" />
                   {currentArticle.ArticleCategories.join(', ') || 'General'}
                 </span>
-                <button
-                  type="button"
-                  className="btn-edit-article"
-                  onClick={() => setIsEditorOpen(true)}
-                  title="Editar este expediente en vivo e insertar lectores de PDF"
-                >
-                  <i className="fas fa-edit me-1 text-info" />
-                  <span>Editar / Insertar PDF</span>
-                </button>
+                <div className="meta-actions-cluster">
+                  <button
+                    type="button"
+                    className="btn-edit-article"
+                    onClick={() => setIsEditorOpen(true)}
+                    title="Diseñar o editar este expediente con el editor básico visual o markdown"
+                  >
+                    <i className="fas fa-edit me-1 text-info" />
+                    <span>Editar / Diseñar</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-new-article-meta"
+                    onClick={() => setIsNewArticleOpen(true)}
+                    title="Crear un nuevo expediente para esta campaña"
+                  >
+                    <i className="fas fa-plus me-1 text-success" />
+                    <span>+ Nuevo</span>
+                  </button>
+                  {articles.length > 1 && (
+                    <button
+                      type="button"
+                      className="btn-delete-article-meta"
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            `¿Está seguro de que desea eliminar el expediente '${currentArticle.ArticleTitle}'?`,
+                          )
+                        ) {
+                          WikiDataAccess.DeleteArticle(campaignID, currentArticle.ArticleSlug);
+                          refresh();
+                          navigate(`/wiki/${campaignID}`);
+                        }
+                      }}
+                      title="Eliminar este expediente de la Wiki"
+                    >
+                      <i className="fas fa-trash-alt text-danger" />
+                    </button>
+                  )}
+                </div>
               </div>
             </header>
 
@@ -247,6 +285,7 @@ export const WikiArticleView: FC = () => {
                 resolveSlug={resolveCanonicalSlug}
                 onSaved={(newContent) => {
                   setCustomContent(newContent);
+                  refresh();
                 }}
               />
             )}
@@ -256,11 +295,39 @@ export const WikiArticleView: FC = () => {
             <i className="fas fa-folder-minus" />
             <h3>Expediente No Encontrado</h3>
             <p>{errorMessage || 'El artículo solicitado no existe o fue desclasificado.'}</p>
-            <Link to={`/wiki/${campaignID}`} className="btn btn-outline-info font-monospace mt-2">
-              <i className="fas fa-home me-2" />
-              Ir al Home de la Wiki
-            </Link>
+            <div className="d-flex gap-2 justify-content-center mt-3">
+              <Link to={`/wiki/${campaignID}`} className="btn btn-outline-info font-monospace">
+                <i className="fas fa-home me-2" />
+                Ir al Home de la Wiki
+              </Link>
+              <button
+                type="button"
+                className="btn btn-info font-monospace text-dark fw-bold"
+                onClick={() => setIsNewArticleOpen(true)}
+              >
+                <i className="fas fa-plus me-1" />
+                Crear Nuevo Artículo
+              </button>
+            </div>
           </div>
+        )}
+
+        {/* Modal to create a new wiki article for this campaign */}
+        {isNewArticleOpen && (
+          <WikiNewArticleModal
+            isOpen={isNewArticleOpen}
+            onClose={() => setIsNewArticleOpen(false)}
+            campaignID={campaignID}
+            campaignTitle={campaign?.CampaignTitle || campaignID}
+            existingCategories={categories.map((c) => c.CategoryName)}
+            onCreated={(newSlug) => {
+              refresh();
+              navigate(`/wiki/${campaignID}/${newSlug}`);
+              setTimeout(() => {
+                setIsEditorOpen(true);
+              }, 150);
+            }}
+          />
         )}
       </main>
     </div>

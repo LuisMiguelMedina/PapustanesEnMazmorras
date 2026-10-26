@@ -10,11 +10,49 @@ import { ResponseObject } from '../models/Common/TransactionModels';
 
 export class CampaignDataAccess {
   /**
+   * Helper to retrieve all campaigns, merging base seeds, user-created local campaigns,
+   * and any field overrides from localStorage.
+   */
+  public static getAllCampaigns(): CampaignBase[] {
+    let list: CampaignBase[] = [...CAMPAIGNS_SEED];
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const stored = localStorage.getItem('mom_local_campaigns');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            const existingIds = new Set(list.map((c) => c.CampaignID));
+            for (const item of parsed) {
+              if (item && item.CampaignID && !existingIds.has(item.CampaignID)) {
+                list.push(item);
+                existingIds.add(item.CampaignID);
+              }
+            }
+          }
+        }
+
+        const overridesStr = localStorage.getItem('mom_campaign_overrides');
+        if (overridesStr) {
+          const overrides: Record<string, Partial<CampaignBase>> = JSON.parse(overridesStr);
+          list = list.map((c) =>
+            overrides[c.CampaignID] ? { ...c, ...overrides[c.CampaignID] } : c,
+          );
+        }
+      } catch {
+        // Fallback gracefully to default list
+      }
+    }
+
+    return list;
+  }
+
+  /**
    * Lists campaigns matching optional filter criteria.
    */
   public static List(filter?: CampaignFilter | null): ResponseObject<CampaignBase[]> {
     try {
-      let results: CampaignBase[] = [...CAMPAIGNS_SEED];
+      let results: CampaignBase[] = this.getAllCampaigns();
 
       if (filter) {
         if (filter.Status) {
@@ -56,8 +94,11 @@ export class CampaignDataAccess {
    */
   public static Find(find: CampaignFind): ResponseObject<CampaignBase> {
     try {
-      const target = CAMPAIGNS_SEED.find(
-        (c) => c.CampaignID === find.CampaignID || c.CampaignSlug === find.CampaignID,
+      const allCampaigns = this.getAllCampaigns();
+      const target = allCampaigns.find(
+        (c) =>
+          c.CampaignID.toLowerCase() === find.CampaignID.toLowerCase() ||
+          (c.CampaignSlug && c.CampaignSlug.toLowerCase() === find.CampaignID.toLowerCase()),
       );
 
       if (!target) {

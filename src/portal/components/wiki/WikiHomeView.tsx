@@ -10,6 +10,7 @@ export interface WikiHomeViewProps {
   categories: WikiCategoryBase[];
   articles: WikiArticleBase[];
   campaignID: string;
+  onNewArticle?: () => void;
 }
 
 type DirectoryViewMode = 'CATEGORIES' | 'ALPHABETICAL';
@@ -19,6 +20,7 @@ export const WikiHomeView: FC<WikiHomeViewProps> = ({
   categories,
   articles,
   campaignID,
+  onNewArticle,
 }) => {
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
@@ -126,6 +128,20 @@ export const WikiHomeView: FC<WikiHomeViewProps> = ({
             </div>
           )}
         </div>
+
+        {onNewArticle && (
+          <div className="hero-action-row mt-3">
+            <button
+              type="button"
+              className="btn-create-article-hero"
+              onClick={onNewArticle}
+              title="Redactar un nuevo artículo o documento para esta campaña"
+            >
+              <i className="fas fa-file-circle-plus me-2" />
+              <span>+ Redactar Nuevo Artículo</span>
+            </button>
+          </div>
+        )}
       </header>
 
       {/* ---------------- 2. SEARCH & TAG FILTER BAR ---------------- */}
