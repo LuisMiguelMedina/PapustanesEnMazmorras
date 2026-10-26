@@ -202,201 +202,205 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                 </button>
               </div>
             ) : (
-              <>
-                {/* Scrollable Modal Body */}
-                <div className="modal-body-content">
-                  <p className="lead-paragraph">
-                    Tus cafés sostienen la infraestructura del servidor en la nube de{' '}
-                    <strong>Foundry VTT</strong>, el almacenamiento de fichas y el{' '}
-                    <strong>mantenimiento de la página</strong>.
-                  </p>
+              /* Unified Scrollable Modal Body */
+              <div className="modal-body-content">
+                <p className="lead-paragraph">
+                  Tus cafés sostienen la infraestructura del servidor en la nube de{' '}
+                  <strong>Foundry VTT</strong>, el almacenamiento de fichas y el{' '}
+                  <strong>mantenimiento de la página</strong>.
+                </p>
 
-                  {/* Commission & Processor Recommendation Notice */}
-                  <div className="processor-tip-box">
-                    <div className="tip-icon">
-                      <i className="fas fa-mug-hot" />
-                    </div>
-                    <div className="tip-text">
-                      <span className="tip-heading">Apoyo Digital Directo vía PayPal</span>
-                      <p>
-                        Puedes invitar desde 1 café (mínimo de <strong>${minAmount} MXN</strong>).
-                        El pago se procesa al instante como contenido y soporte digital con saldo de{' '}
-                        <strong>PayPal</strong> o directamente con tu{' '}
-                        <strong>tarjeta de débito/crédito</strong>.
-                      </p>
-                    </div>
+                {/* Commission & Processor Recommendation Notice */}
+                <div className="processor-tip-box">
+                  <div className="tip-icon">
+                    <i className="fas fa-mug-hot" />
                   </div>
-
-                  {paymentError && (
-                    <div className="payment-error-alert animate__animated animate__shakeX">
-                      <i className="fas fa-exclamation-triangle" />
-                      <span>{paymentError}</span>
-                    </div>
-                  )}
-
-                  {/* Amount Selector Section */}
-                  <div className="donation-amount-section">
-                    <div className="amount-section-header">
-                      <span className="amount-section-label">
-                        <i className="fas fa-coins me-1" />
-                        Monto de tu café / apoyo:
-                      </span>
-                      <span className="amount-min-badge">
-                        Desde ${minAmount} MXN (1 café)
-                      </span>
-                    </div>
-
-                    <div className="amount-chips-grid">
-                      {presets.map((preset) => (
-                        <button
-                          key={preset}
-                          type="button"
-                          className={`amount-chip-btn ${selectedAmount === preset && !customAmountText ? 'active' : ''}`}
-                          onClick={() => handlePresetClick(preset)}
-                        >
-                          ${preset} MXN
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="custom-amount-wrapper">
-                      <span className="currency-prefix">$</span>
-                      <input
-                        type="number"
-                        min={minAmount}
-                        step={5}
-                        value={customAmountText}
-                        onChange={handleCustomChange}
-                        placeholder={`Otro monto libre (ej. ${minAmount})`}
-                        className="custom-amount-input"
-                      />
-                      <span className="currency-suffix">MXN</span>
-                    </div>
-
-                    {isBelowMin && (
-                      <div className="amount-warning-text">
-                        <i className="fas fa-info-circle me-1" />
-                        El monto mínimo sugerido para cubrir procesadores bancarios es de ${minAmount} MXN.
-                      </div>
-                    )}
-                  </div>
-
-                  {/* PayPal Fee Support Option (Checkbox) */}
-                  <div className={`paypal-fee-support-row ${coverPaypalFee ? 'is-active' : ''}`}>
-                    <label className="checkbox-fee-container">
-                      <input
-                        type="checkbox"
-                        className="fantasy-fee-checkbox"
-                        checked={coverPaypalFee}
-                        onChange={(e) => {
-                          setCoverPaypalFee(e.target.checked);
-                          setPaymentError(null);
-                        }}
-                      />
-                      <span className="checkbox-text-main">
-                        Apóyame cubriendo la comisión de PayPal
-                      </span>
-                      {coverPaypalFee && (
-                        <span className="fee-addon-inline-tag animate__animated animate__fadeIn">
-                          <i className="fas fa-plus-circle me-1" />
-                          Incluyendo comisión (+${estimatedFee.toFixed(2)} MXN) | Total: ${totalWithFee.toFixed(2)} MXN
-                        </span>
-                      )}
-                    </label>
+                  <div className="tip-text">
+                    <span className="tip-heading">Apoyo Digital Directo vía PayPal</span>
+                    <p>
+                      Puedes invitar desde 1 café (mínimo de <strong>${minAmount} MXN</strong>).
+                      El pago se procesa al instante como contenido y soporte digital con saldo de{' '}
+                      <strong>PayPal</strong> o directamente con tu{' '}
+                      <strong>tarjeta de débito/crédito</strong>.
+                    </p>
                   </div>
                 </div>
 
-                {/* Pinned Modal Footer Actions with Live PayPal Buttons */}
-                <div className="modal-footer-pinned">
-                  <div className="paypal-button-embed-wrapper">
-                    <PayPalScriptProvider
-                      options={{
-                        clientId: PAYPAL_CLIENT_ID,
-                        currency: 'MXN',
-                        intent: 'capture',
-                      }}
-                    >
-                      <PayPalButtons
-                        style={{
-                          layout: 'vertical',
-                          color: 'gold',
-                          shape: 'rect',
-                          label: 'pay',
-                          height: 44,
-                          tagline: false,
-                        }}
-                        forceReRender={[finalAmount]}
-                        createOrder={(_data, actions) => {
-                          return actions.order.create({
-                            intent: 'CAPTURE',
-                            purchase_units: [
-                              {
-                                description: `Invitar un café - Apoyo a ${communityName}`,
-                                amount: {
-                                  currency_code: 'MXN',
-                                  value: finalAmount.toFixed(2),
-                                  breakdown: {
-                                    item_total: {
-                                      currency_code: 'MXN',
-                                      value: finalAmount.toFixed(2),
-                                    },
-                                  },
-                                },
-                                items: [
-                                  {
-                                    name: `Invitar un café (Soporte digital ${communityName})`,
-                                    description: 'Soporte para Foundry VTT y mantenimiento de la página',
-                                    unit_amount: {
-                                      currency_code: 'MXN',
-                                      value: finalAmount.toFixed(2),
-                                    },
-                                    quantity: '1',
-                                    category: 'DIGITAL_GOODS',
-                                  },
-                                ],
-                              },
-                            ],
-                          });
-                        }}
-                        onApprove={async (_data, actions) => {
-                          try {
-                            if (!actions.order) return;
-                            const details = await actions.order.capture();
-                            const donorName =
-                              details.payer?.name?.given_name ||
-                              details.payer?.name?.surname ||
-                              'Aventurero';
-                            setPayerName(donorName);
-                            setIsSuccess(true);
-                          } catch (err) {
-                            console.error('Capture error:', err);
-                            setPaymentError('No se pudo completar el cobro. Por favor verifica tu cuenta.');
-                          }
-                        }}
-                        onError={(err) => {
-                          console.error('PayPal Buttons error:', err);
-                          setPaymentError('Hubo un inconveniente al cargar PayPal. Revisa tu conexión.');
-                        }}
-                        onCancel={() => {
-                          setPaymentError('Operación cancelada por el usuario.');
-                        }}
-                      />
-                    </PayPalScriptProvider>
+                {paymentError && (
+                  <div className="payment-error-alert animate__animated animate__shakeX">
+                    <i className="fas fa-exclamation-triangle" />
+                    <span>{paymentError}</span>
+                  </div>
+                )}
+
+                {/* Amount Selector Section */}
+                <div className="donation-amount-section">
+                  <div className="amount-section-header">
+                    <span className="amount-section-label">
+                      <i className="fas fa-coins me-1" />
+                      Monto de tu café / apoyo:
+                    </span>
+                    <span className="amount-min-badge">
+                      Desde ${minAmount} MXN (1 café)
+                    </span>
                   </div>
 
-                  <div className="modal-secondary-actions">
-                    <button
-                      type="button"
-                      className="btn-paypal-copy-link"
-                      onClick={handleCopyLink}
-                      title="Copiar enlace de apoyo al portapapeles"
-                    >
-                      <i className={`fas ${copied ? 'fa-check text-success' : 'fa-copy'} me-1`} />
-                      <span>{copied ? '¡Enlace Copiado!' : 'Copiar Enlace'}</span>
-                    </button>
+                  <div className="amount-chips-grid">
+                    {presets.map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        className={`amount-chip-btn ${selectedAmount === preset && !customAmountText ? 'active' : ''}`}
+                        onClick={() => handlePresetClick(preset)}
+                      >
+                        ${preset} MXN
+                      </button>
+                    ))}
+                  </div>
 
-                    {!hideKofi && (
-                      <a
+                  <div className="custom-amount-wrapper">
+                    <span className="currency-prefix">$</span>
+                    <input
+                      type="number"
+                      min={minAmount}
+                      step={5}
+                      value={customAmountText}
+                      onChange={handleCustomChange}
+                      placeholder={`Otro monto libre (ej. ${minAmount})`}
+                      className="custom-amount-input"
+                    />
+                    <span className="currency-suffix">MXN</span>
+                  </div>
+
+                  {isBelowMin && (
+                    <div className="amount-warning-text">
+                      <i className="fas fa-info-circle me-1" />
+                      El monto mínimo sugerido para cubrir procesadores bancarios es de ${minAmount} MXN.
+                    </div>
+                  )}
+                </div>
+
+                {/* PayPal Fee Support Option (Checkbox) */}
+                <div className={`paypal-fee-support-row ${coverPaypalFee ? 'is-active' : ''}`}>
+                  <label className="checkbox-fee-container">
+                    <input
+                      type="checkbox"
+                      className="fantasy-fee-checkbox"
+                      checked={coverPaypalFee}
+                      onChange={(e) => {
+                        setCoverPaypalFee(e.target.checked);
+                        setPaymentError(null);
+                      }}
+                    />
+                    <span className="checkbox-text-main">
+                      Apóyame cubriendo la comisión de PayPal
+                    </span>
+                    {coverPaypalFee && (
+                      <span className="fee-addon-inline-tag animate__animated animate__fadeIn">
+                        <i className="fas fa-plus-circle me-1" />
+                        Incluyendo comisión (+${estimatedFee.toFixed(2)} MXN) | Total: ${totalWithFee.toFixed(2)} MXN
+                      </span>
+                    )}
+                  </label>
+                </div>
+
+                {/* Live PayPal Buttons (Expands smoothly in scrollable container) */}
+                <div className="paypal-button-embed-wrapper">
+                  <PayPalScriptProvider
+                    options={{
+                      clientId: PAYPAL_CLIENT_ID,
+                      currency: 'MXN',
+                      intent: 'capture',
+                    }}
+                  >
+                    <PayPalButtons
+                      style={{
+                        layout: 'vertical',
+                        color: 'gold',
+                        shape: 'rect',
+                        label: 'pay',
+                        height: 44,
+                        tagline: false,
+                      }}
+                      forceReRender={[finalAmount]}
+                      createOrder={(_data, actions) => {
+                        return actions.order.create({
+                          intent: 'CAPTURE',
+                          application_context: {
+                            brand_name: communityName,
+                            landing_page: 'NO_PREFERENCE',
+                            shipping_preference: 'NO_SHIPPING',
+                            user_action: 'PAY_NOW',
+                          },
+                          purchase_units: [
+                            {
+                              description: `Invitar un café - Apoyo a ${communityName}`,
+                              amount: {
+                                currency_code: 'MXN',
+                                value: finalAmount.toFixed(2),
+                                breakdown: {
+                                  item_total: {
+                                    currency_code: 'MXN',
+                                    value: finalAmount.toFixed(2),
+                                  },
+                                },
+                              },
+                              items: [
+                                {
+                                  name: `Invitar un café (Soporte digital ${communityName})`,
+                                  description: 'Soporte para Foundry VTT y mantenimiento de la página',
+                                  unit_amount: {
+                                    currency_code: 'MXN',
+                                    value: finalAmount.toFixed(2),
+                                  },
+                                  quantity: '1',
+                                  category: 'DIGITAL_GOODS',
+                                },
+                              ],
+                            },
+                          ],
+                        });
+                      }}
+                      onApprove={async (_data, actions) => {
+                        try {
+                          if (!actions.order) return;
+                          const details = await actions.order.capture();
+                          const donorName =
+                            details.payer?.name?.given_name ||
+                            details.payer?.name?.surname ||
+                            'Aventurero';
+                          setPayerName(donorName);
+                          setIsSuccess(true);
+                        } catch (err) {
+                          console.error('Capture error:', err);
+                          setPaymentError('No se pudo completar el cobro. Por favor verifica tu cuenta.');
+                        }
+                      }}
+                      onError={(err) => {
+                        console.error('PayPal Buttons error:', err);
+                        setPaymentError('Hubo un inconveniente al cargar PayPal. Revisa tu conexión.');
+                      }}
+                      onCancel={() => {
+                        setPaymentError('Operación cancelada por el usuario.');
+                      }}
+                    />
+                  </PayPalScriptProvider>
+                </div>
+
+                {/* Secondary Actions */}
+                <div className="modal-secondary-actions">
+                  <button
+                    type="button"
+                    className="btn-paypal-copy-link"
+                    onClick={handleCopyLink}
+                    title="Copiar enlace de apoyo al portapapeles"
+                  >
+                    <i className={`fas ${copied ? 'fa-check text-success' : 'fa-copy'} me-1`} />
+                    <span>{copied ? '¡Enlace Copiado!' : 'Copiar Enlace'}</span>
+                  </button>
+
+                  {!hideKofi && (
+                    <a
                       href={cleanAliasPath}
                       onClick={handleOpenKofi}
                       target="_blank"
@@ -407,11 +411,10 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                     >
                       <i className="fas fa-mug-hot me-1" />
                       <span>O colaborar vía Ko-fi</span>
-                      </a>
-                    )}
-                  </div>
+                    </a>
+                  )}
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>
