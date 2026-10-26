@@ -83,7 +83,6 @@
 
   /* ---------------- MODAL BACKDROP ---------------- */
   .paypal-modal-backdrop {
-    /* Evita que el formulario de tarjeta de PayPal use modo oscuro (texto ilegible). */
     color-scheme: none;
     position: fixed;
     inset: 0;
@@ -97,6 +96,10 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     animation: paypalFadeIn 0.2s ease-out;
+
+    &.is-paypal-card-checkout {
+      color-scheme: light;
+    }
 
     .paypal-modal-card {
       width: 100%;
@@ -291,6 +294,96 @@
         border-radius: 4px;
         &:hover {
           background: rgba(245, 158, 11, 0.85);
+        }
+      }
+
+      /* Tarjeta de débito/crédito: zona clara con acento ámbar (texto PayPal legible). */
+      &.is-paypal-card-checkout {
+        color-scheme: light;
+        background: linear-gradient(180deg, #fffbeb 0%, #fff7ed 55%, #ffffff 100%);
+        color: #292524;
+
+        &::-webkit-scrollbar-track {
+          background: rgba(245, 158, 11, 0.12);
+        }
+
+        .lead-paragraph {
+          color: #44403c;
+
+          strong {
+            color: #b45309;
+          }
+        }
+
+        .processor-tip-box {
+          background: rgba(245, 158, 11, 0.14);
+          border-color: rgba(217, 119, 6, 0.35);
+          border-left-color: #d97706;
+
+          .tip-text {
+            color: #44403c;
+
+            .tip-heading {
+              color: #92400e;
+            }
+
+            p {
+              color: #57534e;
+
+              strong {
+                color: #b45309;
+              }
+            }
+          }
+        }
+
+        .donation-amount-section {
+          background: rgba(255, 255, 255, 0.75);
+          border-color: rgba(245, 158, 11, 0.35);
+
+          .amount-section-label {
+            color: #92400e;
+          }
+
+          .amount-min-badge {
+            color: #b45309;
+          }
+
+          .amount-chip-btn {
+            color: #44403c;
+            background: #fff;
+
+            &.active {
+              color: #92400e;
+            }
+          }
+
+          .custom-amount-wrapper {
+            background: #fff;
+
+            .custom-amount-input {
+              color: #1c1917;
+            }
+          }
+        }
+
+        .paypal-fee-support-row {
+          background: rgba(255, 255, 255, 0.8);
+          border-color: rgba(245, 158, 11, 0.35);
+
+          .checkbox-text-main {
+            color: #92400e;
+          }
+        }
+
+        .btn-paypal-copy-link {
+          color: #44403c;
+          background: rgba(255, 255, 255, 0.85);
+          border-color: rgba(217, 119, 6, 0.35);
+
+          &:hover {
+            color: #b45309;
+          }
         }
       }
 
@@ -556,7 +649,6 @@
         margin-top: 0.25rem;
         color-scheme: none;
 
-        /* Botones a ancho completo (evita franja clara más ancha que el botón dorado). */
         > div {
           width: 100% !important;
           max-width: 100% !important;
@@ -564,6 +656,15 @@
 
         iframe {
           z-index: 10 !important;
+        }
+
+        &.is-card-checkout-expanded {
+          color-scheme: light;
+          background: #ffffff;
+          border: 1px solid rgba(245, 158, 11, 0.4);
+          border-radius: 8px;
+          padding: 0.65rem 0.5rem 0.75rem;
+          box-shadow: 0 2px 12px rgba(180, 83, 9, 0.12);
         }
       }
 
@@ -618,6 +719,15 @@
       }
     }
   }
+}
+
+/* Overlays de PayPal (dirección de facturación) montados fuera del modal */
+html.paypal-donate-card-flow {
+  color-scheme: light;
+}
+
+html.paypal-donate-card-flow body > div[id*='zoid'] {
+  color-scheme: light;
 }
 
 @keyframes paypalFadeIn {
