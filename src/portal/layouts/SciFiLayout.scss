@@ -1,7 +1,9 @@
 /* =========================================================
    MEDIEVAL FANTASY PORTAL LAYOUT - Papustanes en Mazmorras
-   Atmospheric dark iron, torchfire flame, ember glow & Cinzel typography
+   Atmospheric dark iron, torchfire flame, ember glow
    ========================================================= */
+
+@import '../styles/fantasy-display-font.scss';
 
 .scifi-portal-shell {
   min-height: 100vh;
@@ -72,10 +74,10 @@
       }
 
       .brand-title-main {
-        font-family: 'Cinzel', serif;
-        font-size: clamp(1.1rem, 2.2vw, 1.35rem);
-        font-weight: 800;
-        letter-spacing: 0.08em;
+        font-family: var(--font-fantasy-display);
+        font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+        font-weight: 400;
+        letter-spacing: 0.04em;
         background: linear-gradient(135deg, #ffffff 0%, #ffedd5 35%, #f97316 75%, #ea580c 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
