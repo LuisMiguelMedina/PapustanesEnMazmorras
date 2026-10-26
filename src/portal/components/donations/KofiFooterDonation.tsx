@@ -16,8 +16,15 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
+  const [coverPaypalFee, setCoverPaypalFee] = useState<boolean>(false);
 
   const kofiUrl = `https://ko-fi.com/${username}`;
+
+  // Parse suggested base amount number (e.g. 50 from "$50 MXN")
+  const baseAmountNum = parseFloat(suggestedAmount.replace(/[^0-9.]/g, '')) || 50;
+  // Estimated PayPal Mexico fee: ~3.95% + $4.00 MXN fixed
+  const estimatedFee = Math.round((baseAmountNum * 0.0395 + 4.0) * 100) / 100;
+  const totalWithFee = Math.round((baseAmountNum + estimatedFee) * 100) / 100;
 
   // Lock body scroll while modal is active
   useEffect(() => {
@@ -125,6 +132,27 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                 </div>
               </div>
 
+              {/* PayPal Fee Support Option (Checkbox) */}
+              <div className={`paypal-fee-support-row ${coverPaypalFee ? 'is-active' : ''}`}>
+                <label className="checkbox-fee-container">
+                  <input
+                    type="checkbox"
+                    className="fantasy-fee-checkbox"
+                    checked={coverPaypalFee}
+                    onChange={(e) => setCoverPaypalFee(e.target.checked)}
+                  />
+                  <span className="checkbox-text-main">
+                    Apóyame pagando la comisión de PayPal
+                  </span>
+                  {coverPaypalFee && (
+                    <span className="fee-addon-inline-tag animate__animated animate__fadeIn">
+                      <i className="fas fa-plus-circle me-1" />
+                      Incluyendo esta cantidad (+${estimatedFee.toFixed(2)} MXN) como adicional a lo que ibas a donar (Total sugerido: ${totalWithFee.toFixed(2)} MXN)
+                    </span>
+                  )}
+                </label>
+              </div>
+
               {/* Action Buttons */}
               <div className="modal-action-buttons">
                 <a
@@ -134,7 +162,11 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                   className="btn-kofi-primary-action"
                 >
                   <i className="fas fa-heart me-2" />
-                  <span>Donar en Ko-fi ({username})</span>
+                  <span>
+                    {coverPaypalFee
+                      ? `Donar en Ko-fi ($${totalWithFee.toFixed(2)} MXN sugeridos)`
+                      : `Donar en Ko-fi (${username})`}
+                  </span>
                   <i className="fas fa-external-link-alt ms-2 external-arrow" />
                 </a>
 
