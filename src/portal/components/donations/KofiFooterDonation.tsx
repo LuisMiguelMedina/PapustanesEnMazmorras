@@ -129,7 +129,7 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
           }}
         >
           <div className="kofi-modal-card animate__animated animate__fadeInUp">
-            {/* Modal Header */}
+            {/* Pinned Modal Header Banner */}
             <div className="modal-header-banner">
               <div className="banner-emblem">
                 <i className="fas fa-dice-d20" />
@@ -150,7 +150,7 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
               </button>
             </div>
 
-            {/* Modal Body */}
+            {/* Scrollable Modal Body */}
             <div className="modal-body-content">
               <p className="lead-paragraph">
                 Tus aportaciones sostienen la infraestructura del servidor en la nube de{' '}
@@ -164,7 +164,7 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                   <i className="fas fa-shield-alt" />
                 </div>
                 <div className="tip-text">
-                  <strong>Aportaciones Seguras y Sin Límites</strong>
+                  <span className="tip-heading">Aportaciones Seguras y Sin Límites</span>
                   <p>
                     Cualquier aportación es bien recibida (mínimo sugerido de <strong>${minAmount} MXN</strong>).
                     Puedes colaborar al instante con <strong>Apple Pay</strong>,{' '}
@@ -240,8 +240,10 @@ export const KofiFooterDonation: FC<KofiFooterDonationProps> = ({
                   )}
                 </label>
               </div>
+            </div>
 
-              {/* Action Buttons */}
+            {/* Pinned Modal Footer Actions */}
+            <div className="modal-footer-pinned">
               <div className="modal-action-buttons">
                 <a
                   href={cleanAliasPath}
