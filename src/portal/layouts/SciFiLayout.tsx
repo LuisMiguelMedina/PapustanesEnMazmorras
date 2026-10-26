@@ -83,7 +83,7 @@ export const SciFiLayout: FC = () => {
             <PayPalFooterDonation
               communityName="Papustanes en Mazmorras"
               label="Invitar un Café"
-              sublabel="Apoya el servidor Foundry VTT & las crónicas"
+              sublabel="Apoya el servidor Foundry VTT & mantenimiento de la página"
               suggestedAmount="$20 MXN"
               minAmount={20}
             />

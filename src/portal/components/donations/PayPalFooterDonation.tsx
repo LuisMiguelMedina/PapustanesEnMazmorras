@@ -28,7 +28,7 @@ const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || DEFAULT_PAYPAL
 export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
   communityName = 'Papustanes en Mazmorras',
   label = 'Invitar un Café',
-  sublabel = 'Apoya el servidor Foundry VTT & las crónicas',
+  sublabel = 'Apoya el servidor Foundry VTT & mantenimiento de la página',
   suggestedAmount = '$20 MXN',
   minAmount = 20,
 }) => {
@@ -205,7 +205,7 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                 <div className="modal-body-content">
                   <p className="lead-paragraph">
                     Tus cafés sostienen la infraestructura del servidor en la nube de{' '}
-                    <strong>Foundry VTT</strong>, el almacenamiento de fichas, las crónicas y el{' '}
+                    <strong>Foundry VTT</strong>, el almacenamiento de fichas y el{' '}
                     <strong>mantenimiento de la página</strong>.
                   </p>
 
