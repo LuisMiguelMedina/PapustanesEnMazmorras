@@ -3,6 +3,7 @@ import { Link, Outlet } from 'react-router-dom';
 import { ref, onValue } from 'firebase/database';
 import { db } from '../firebase';
 import { PayPalFooterDonation } from '../components/donations/PayPalFooterDonation';
+import { DonationCopyLinkButton } from '../components/donations/DonationCopyLinkButton';
 import './SciFiLayout.scss';
 
 const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
@@ -57,6 +58,7 @@ export const SciFiLayout: FC = () => {
           </Link>
 
           <div className="topbar-actions">
+            <DonationCopyLinkButton className="btn-donation-copy-link" />
             <a
               href="http://practically-marine.tun.ply.gg:61342"
               target="_blank"

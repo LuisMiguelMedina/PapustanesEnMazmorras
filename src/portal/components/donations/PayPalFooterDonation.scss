@@ -569,7 +569,7 @@
          * está abierto; el resto del modal sigue en tema oscuro del portal.
          */
         &.is-card-checkout-expanded {
-          color-scheme: light;
+          color-scheme: light only;
           background: linear-gradient(165deg, #fffbeb 0%, #fef3c7 42%, #fff7ed 100%);
           border: 1px solid rgba(245, 158, 11, 0.55);
           border-radius: 8px;
@@ -594,6 +594,10 @@
         flex-wrap: wrap;
         padding-top: 0.25rem;
         padding-bottom: 0.5rem;
+
+        &.is-card-checkout-active {
+          display: none;
+        }
 
         .btn-paypal-copy-link {
           background: rgba(255, 255, 255, 0.06);
