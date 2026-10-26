@@ -26,8 +26,12 @@ const DEFAULT_PAYPAL_CLIENT_ID =
   'BAA-aiHBfRBEkWGGh8umZAuwjJwpsUA104wjv6EJFoaDieVF93wwOrNXdSZjvP__hya21sARA2sWhVjUHg';
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || DEFAULT_PAYPAL_CLIENT_ID;
 
-/** Español (México): etiquetas, código postal y prefijo +52 en tarjeta de débito/crédito. */
-const PAYPAL_LOCALE = 'es-MX';
+/**
+ * Español (México): etiquetas, código postal y prefijo +52 en tarjeta de débito/crédito.
+ * El script del SDK exige locale con guion bajo (es_MX); la Orders API usa BCP-47 (es-MX).
+ */
+const PAYPAL_SDK_LOCALE = 'es_MX';
+const PAYPAL_ORDER_LOCALE = 'es-MX';
 
 const buildPayPalScriptOptions = () => {
   const options: {
@@ -40,7 +44,7 @@ const buildPayPalScriptOptions = () => {
     clientId: PAYPAL_CLIENT_ID,
     currency: 'MXN',
     intent: 'capture',
-    locale: PAYPAL_LOCALE,
+    locale: PAYPAL_SDK_LOCALE,
   };
   // PayPal solo permite buyer-country en sandbox; ayuda a probar CP y móvil MX en local.
   if (import.meta.env.DEV) {
@@ -345,7 +349,7 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                           intent: 'CAPTURE',
                           application_context: {
                             brand_name: communityName,
-                            locale: PAYPAL_LOCALE,
+                            locale: PAYPAL_ORDER_LOCALE,
                             landing_page: 'NO_PREFERENCE',
                             shipping_preference: 'NO_SHIPPING',
                             user_action: 'PAY_NOW',
