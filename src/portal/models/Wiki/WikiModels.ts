@@ -56,3 +56,18 @@ export interface WikiCategoryBase {
   CategoryName: string;
   ArticleCount: number;
 }
+
+export interface WikiHeading {
+  level: number;
+  text: string;
+  slug: string;
+}
+
+export interface WikiSearchResultMatch {
+  article: WikiArticleBase;
+  matchType: 'TITLE' | 'SUBTITLE' | 'TAG' | 'CONTENT';
+  matchedSubtitle?: string;
+  matchedSubtitleSlug?: string;
+  matchedTag?: string;
+  snippet?: string;
+}

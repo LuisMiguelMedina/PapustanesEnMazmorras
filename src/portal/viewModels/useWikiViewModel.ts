@@ -83,13 +83,9 @@ export function useWikiViewModel(
 
   // Resolve and load active article
   useEffect(() => {
-    if (!activeSlug) {
-      // Default to campaign wiki home slug if available
-      const defaultSlug = campaign?.CampaignWikiHomeSlug || 'back-to-the-future-past-and-future';
-      const findRes = WikiDataAccess.Find({ CampaignID: campaignID, ArticleSlug: defaultSlug });
-      if (findRes.CodeNumber === 302 && findRes.Result) {
-        setCurrentArticle(findRes.Result);
-      }
+    if (!activeSlug || activeSlug === 'home') {
+      setCurrentArticle(null);
+      setErrorMessage(null);
       return;
     }
 
@@ -101,7 +97,7 @@ export function useWikiViewModel(
       setCurrentArticle(null);
       setErrorMessage(`El artículo '${activeSlug}' no existe en la base de datos.`);
     }
-  }, [campaignID, activeSlug, campaign]);
+  }, [campaignID, activeSlug]);
 
   // Search results computed via DataAccess
   const searchResults = useMemo(() => {

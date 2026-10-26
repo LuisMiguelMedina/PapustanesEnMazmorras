@@ -1,5 +1,6 @@
 import { FC, ReactNode, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { slugify } from './wikiHelpers';
 import './WikiContentRenderer.scss';
 
 export interface WikiContentRendererProps {
@@ -18,17 +19,6 @@ type RenderElement =
   | { type: 'ol'; items: string[] }
   | { type: 'blockquote'; text: string }
   | { type: 'table'; headers: string[]; rows: string[][] };
-
-function slugify(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/&/g, 'and')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
 
 export const WikiContentRenderer: FC<WikiContentRendererProps> = ({
   content,
@@ -338,12 +328,42 @@ export const WikiContentRenderer: FC<WikiContentRendererProps> = ({
     <article className="wiki-rendered-content">
       {renderedElements.map((el, index) => {
         switch (el.type) {
-          case 'h2':
-            return <h2 key={index}>{parseInlineMarkup(el.text)}</h2>;
-          case 'h3':
-            return <h3 key={index}>{parseInlineMarkup(el.text)}</h3>;
-          case 'h4':
-            return <h4 key={index}>{parseInlineMarkup(el.text)}</h4>;
+          case 'h2': {
+            const cleanText = el.text.replace(/['*]/g, '').trim();
+            const headingSlug = slugify(cleanText);
+            return (
+              <h2 key={index} id={headingSlug} className="wiki-heading wiki-heading-h2">
+                <a href={`#${headingSlug}`} className="heading-anchor" aria-hidden="true" title="Enlace directo a esta sección">
+                  #
+                </a>
+                <span>{parseInlineMarkup(el.text)}</span>
+              </h2>
+            );
+          }
+          case 'h3': {
+            const cleanText = el.text.replace(/['*]/g, '').trim();
+            const headingSlug = slugify(cleanText);
+            return (
+              <h3 key={index} id={headingSlug} className="wiki-heading wiki-heading-h3">
+                <a href={`#${headingSlug}`} className="heading-anchor" aria-hidden="true" title="Enlace directo a esta sección">
+                  #
+                </a>
+                <span>{parseInlineMarkup(el.text)}</span>
+              </h3>
+            );
+          }
+          case 'h4': {
+            const cleanText = el.text.replace(/['*]/g, '').trim();
+            const headingSlug = slugify(cleanText);
+            return (
+              <h4 key={index} id={headingSlug} className="wiki-heading wiki-heading-h4">
+                <a href={`#${headingSlug}`} className="heading-anchor" aria-hidden="true" title="Enlace directo a esta sección">
+                  #
+                </a>
+                <span>{parseInlineMarkup(el.text)}</span>
+              </h4>
+            );
+          }
           case 'blockquote':
             return <blockquote key={index}>{parseInlineMarkup(el.text)}</blockquote>;
           case 'ul':

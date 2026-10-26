@@ -1,0 +1,129 @@
+/* Wikipedia-style Modern Table of Contents (Índice) */
+.wiki-toc-box {
+  background: rgba(14, 17, 24, 0.95);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-left: 3px solid #f59e0b;
+  border-radius: 8px;
+  padding: 0.85rem 1.15rem;
+  margin: 1.5rem 0 2rem 0;
+  max-width: 520px;
+  display: table;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    display: block;
+    padding: 0.75rem 0.9rem;
+  }
+
+  .toc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+    .toc-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #f3f4f6;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .btn-toggle-toc {
+      background: none;
+      border: none;
+      color: #38bdf8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.15s ease;
+
+      &:hover {
+        color: #7dd3fc;
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .toc-list {
+    list-style: none;
+    padding: 0.5rem 0 0.15rem 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .toc-item {
+      font-family: 'Space Grotesk', 'Manrope', sans-serif;
+      font-size: 0.82rem;
+      line-height: 1.4;
+
+      &.level-2 {
+        padding-left: 0;
+        font-weight: 600;
+      }
+
+      &.level-3 {
+        padding-left: 1.25rem;
+        font-size: 0.78rem;
+        color: #94a3b8;
+      }
+
+      &.level-4 {
+        padding-left: 2.25rem;
+        font-size: 0.75rem;
+        color: #64748b;
+      }
+
+      .toc-link {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.45rem;
+        color: #cbd5e1;
+        text-decoration: none;
+        transition: all 0.15s ease;
+        padding: 1.5px 4px;
+        border-radius: 4px;
+
+        .toc-number {
+          font-family: 'JetBrains Mono', monospace;
+          color: #f59e0b;
+          font-size: 0.75rem;
+          font-weight: 700;
+        }
+
+        .toc-label {
+          color: inherit;
+        }
+
+        &:hover {
+          color: #38bdf8;
+          background: rgba(56, 189, 248, 0.08);
+
+          .toc-label {
+            text-decoration: underline;
+          }
+        }
+      }
+
+      &.active > .toc-link {
+        color: #38bdf8;
+        background: rgba(56, 189, 248, 0.15);
+        font-weight: 700;
+
+        .toc-number {
+          color: #38bdf8;
+        }
+      }
+    }
+  }
+}

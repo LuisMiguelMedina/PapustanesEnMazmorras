@@ -46,6 +46,15 @@ export const WikiSidebar: FC<WikiSidebarProps> = ({
             <span>{campaign?.CampaignSystem || 'Base de Datos de Lore'}</span>
           </div>
         </div>
+
+        <Link
+          to={`/wiki/${campaign?.CampaignID || 'bttf'}`}
+          className={`sidebar-home-btn ${!activeSlug || activeSlug === 'home' ? 'active' : ''}`}
+          title="Ir a la página principal de la Wiki para buscar palabras clave o explorar categorías"
+        >
+          <i className="fas fa-landmark me-2" />
+          <span>Portal Principal / Home Wiki</span>
+        </Link>
       </div>
 
       <div className="sidebar-search-box">

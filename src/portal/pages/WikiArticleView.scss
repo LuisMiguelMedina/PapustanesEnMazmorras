@@ -51,7 +51,7 @@
     }
 
     .article-header {
-      margin-bottom: 2.5rem;
+      margin-bottom: 2rem;
       padding-bottom: 1.5rem;
       border-bottom: 1px solid rgba(0, 255, 255, 0.25);
       position: relative;
@@ -112,6 +112,155 @@
         content: '';
         display: table;
         clear: both;
+      }
+    }
+
+    .article-footer-nav {
+      margin-top: 3.5rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+      .article-paging-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+
+        .paging-placeholder {
+          flex: 1;
+          min-width: 140px;
+
+          @media (max-width: 600px) {
+            display: none;
+          }
+        }
+
+        .paging-btn {
+          flex: 1;
+          min-width: 180px;
+          display: flex;
+          flex-direction: column;
+          background: rgba(14, 18, 27, 0.8);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          padding: 10px 14px;
+          text-decoration: none;
+          transition: all 0.2s ease;
+
+          .paging-dir {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            color: #f59e0b;
+            font-weight: 700;
+            margin-bottom: 2px;
+          }
+
+          .paging-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #f1f5f9;
+          }
+
+          &:hover {
+            border-color: rgba(56, 189, 248, 0.5);
+            background: rgba(56, 189, 248, 0.1);
+            transform: translateY(-2px);
+
+            .paging-title {
+              color: #38bdf8;
+            }
+          }
+
+          &.next-btn {
+            text-align: right;
+            border-right: 3px solid #f59e0b;
+          }
+
+          &.prev-btn {
+            text-align: left;
+            border-left: 3px solid #f59e0b;
+          }
+        }
+
+        .btn-return-home {
+          display: inline-flex;
+          align-items: center;
+          background: rgba(245, 158, 11, 0.12);
+          border: 1px solid rgba(245, 158, 11, 0.4);
+          color: #fcd34d;
+          font-family: 'Space Grotesk', sans-serif;
+          font-size: 0.78rem;
+          font-weight: 700;
+          padding: 8px 14px;
+          border-radius: 6px;
+          text-decoration: none;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: #f59e0b;
+            color: #0c0e14;
+            transform: translateY(-1px);
+          }
+        }
+      }
+
+      .related-articles-section {
+        background: rgba(10, 14, 22, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 1.25rem 1.5rem;
+
+        .related-heading {
+          font-family: 'Space Grotesk', sans-serif;
+          font-size: 1rem;
+          font-weight: 800;
+          color: #f3f4f6;
+          margin: 0 0 1rem;
+        }
+
+        .related-cards-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          gap: 0.75rem;
+
+          .related-card {
+            display: flex;
+            flex-direction: column;
+            background: rgba(18, 22, 34, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 6px;
+            padding: 8px 12px;
+            text-decoration: none;
+            transition: all 0.15s ease;
+
+            .rel-title {
+              font-family: 'Space Grotesk', sans-serif;
+              font-size: 0.85rem;
+              font-weight: 700;
+              color: #f1f5f9;
+              margin-bottom: 2px;
+            }
+
+            .rel-cat {
+              font-family: 'JetBrains Mono', monospace;
+              font-size: 0.65rem;
+              color: #64748b;
+            }
+
+            &:hover {
+              border-color: #38bdf8;
+              background: rgba(56, 189, 248, 0.15);
+              transform: translateY(-1px);
+
+              .rel-title {
+                color: #38bdf8;
+              }
+            }
+          }
+        }
       }
     }
 

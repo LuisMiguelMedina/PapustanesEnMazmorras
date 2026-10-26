@@ -24,6 +24,7 @@ fs.writeFileSync(noJekyllPath, '');
 const spaRoutes = [
   'campaigns',
   'wiki',
+  'wiki/bttf',
   'login',
   'register',
   'dashboard',
