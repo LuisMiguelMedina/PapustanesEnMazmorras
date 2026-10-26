@@ -1,0 +1,315 @@
+/* =========================================================
+   KO-FI COMMUNITY DONATION FOOTER WIDGET & FANTASY MODAL
+   ========================================================= */
+
+.kofi-footer-donation-wrapper {
+  display: inline-flex;
+  align-items: center;
+
+  /* ---------------- FOOTER TRIGGER BUTTON ---------------- */
+  .btn-kofi-fantasy-trigger {
+    background: linear-gradient(135deg, rgba(28, 25, 23, 0.95) 0%, rgba(12, 10, 9, 0.98) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: 999px;
+    padding: 0.45rem 1.15rem 0.45rem 0.55rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), 0 0 10px rgba(234, 88, 12, 0.1);
+    text-decoration: none;
+
+    &:hover {
+      transform: translateY(-2px);
+      border-color: rgba(245, 158, 11, 0.7);
+      background: linear-gradient(135deg, rgba(41, 37, 36, 0.98) 0%, rgba(20, 16, 15, 1) 100%);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 18px rgba(245, 158, 11, 0.35);
+
+      .kofi-icon-badge {
+        background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+        transform: scale(1.08) rotate(-5deg);
+        box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
+      }
+
+      .kofi-primary-text {
+        color: #fef08a;
+      }
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    .kofi-icon-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      color: #0c0a09;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.4);
+    }
+
+    .kofi-label-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      line-height: 1.15;
+
+      .kofi-primary-text {
+        font-family: 'Cinzel', Georgia, serif;
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: #fde68a;
+        transition: color 0.2s ease;
+      }
+
+      .kofi-subtext {
+        font-family: 'Space Grotesk', -apple-system, sans-serif;
+        font-size: 0.68rem;
+        color: #a8a29e;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  /* ---------------- MODAL BACKDROP ---------------- */
+  .kofi-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    background: rgba(4, 5, 8, 0.82);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: kofiFadeIn 0.2s ease-out;
+
+    .kofi-modal-card {
+      width: 100%;
+      max-width: 520px;
+      background: linear-gradient(160deg, #14161f 0%, #0d0f17 100%);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 30px rgba(245, 158, 11, 0.15);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Modal Header Banner */
+    .modal-header-banner {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 1.15rem 1.4rem;
+      background: linear-gradient(90deg, rgba(234, 88, 12, 0.18) 0%, rgba(30, 25, 22, 0.6) 100%);
+      border-bottom: 1px solid rgba(245, 158, 11, 0.25);
+
+      .banner-emblem {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(234, 88, 12, 0.1));
+        border: 1px solid rgba(245, 158, 11, 0.4);
+        color: #f59e0b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+      }
+
+      .banner-titles {
+        flex: 1;
+        min-width: 0;
+
+        .banner-kicker {
+          font-family: 'Space Grotesk', monospace;
+          font-size: 0.68rem;
+          font-weight: 800;
+          color: #f59e0b;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          display: block;
+        }
+
+        .banner-main-title {
+          font-family: 'Cinzel', Georgia, serif;
+          font-size: 1.15rem;
+          font-weight: 800;
+          color: #ffffff;
+          margin: 0;
+          letter-spacing: 0.03em;
+        }
+      }
+
+      .btn-modal-dismiss {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #94a3b8;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          background: rgba(239, 68, 68, 0.2);
+          color: #ffffff;
+          border-color: #ef4444;
+        }
+      }
+    }
+
+    /* Modal Body */
+    .modal-body-content {
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.15rem;
+
+      .lead-paragraph {
+        font-size: 0.92rem;
+        line-height: 1.55;
+        color: #cbd5e1;
+        margin: 0;
+
+        strong {
+          color: #fef08a;
+        }
+      }
+
+      /* Commission & Processor Tip Box */
+      .processor-tip-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.85rem;
+        background: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.25);
+        border-left: 3px solid #f59e0b;
+        border-radius: 6px;
+        padding: 0.85rem 1rem;
+
+        .tip-icon {
+          color: #f59e0b;
+          font-size: 1.15rem;
+          margin-top: 2px;
+          flex-shrink: 0;
+        }
+
+        .tip-text {
+          font-size: 0.82rem;
+          line-height: 1.45;
+          color: #e2e8f0;
+
+          strong {
+            display: block;
+            color: #fde68a;
+            font-size: 0.85rem;
+            margin-bottom: 2px;
+          }
+
+          p {
+            margin: 0;
+            color: #cbd5e1;
+          }
+        }
+      }
+
+      /* Action Buttons */
+      .modal-action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+
+        .btn-kofi-primary-action {
+          flex: 1;
+          min-width: 220px;
+          background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+          color: #0c0a09;
+          font-family: 'Cinzel', Georgia, serif;
+          font-size: 0.9rem;
+          font-weight: 800;
+          letter-spacing: 0.03em;
+          padding: 0.75rem 1.25rem;
+          border-radius: 8px;
+          border: none;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          text-decoration: none;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
+
+          .external-arrow {
+            font-size: 0.75rem;
+            opacity: 0.8;
+          }
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
+            color: #ffffff;
+          }
+        }
+
+        .btn-kofi-copy-link {
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          color: #e2e8f0;
+          font-family: 'Space Grotesk', -apple-system, sans-serif;
+          font-size: 0.85rem;
+          font-weight: 600;
+          padding: 0.75rem 1rem;
+          border-radius: 8px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.15s ease;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #fde68a;
+          }
+        }
+      }
+    }
+
+    /* Modal Footer Caption */
+    .modal-footer-caption {
+      padding: 0.75rem 1.4rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.75rem;
+      color: #94a3b8;
+      text-align: center;
+    }
+  }
+}
+
+@keyframes kofiFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

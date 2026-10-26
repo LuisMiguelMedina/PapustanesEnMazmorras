@@ -165,8 +165,24 @@
       margin-top: 1rem;
     }
 
-    .footer-bottom {
+    .footer-inner {
       max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .footer-donation-block {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .footer-bottom {
+      width: 100%;
       margin: 0 auto;
       display: flex;
       justify-content: center;

@@ -2,6 +2,7 @@ import { FC, useEffect } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { ref, onValue } from 'firebase/database';
 import { db } from '../firebase';
+import { KofiFooterDonation } from '../components/donations/KofiFooterDonation';
 import './SciFiLayout.scss';
 
 export const SciFiLayout: FC = () => {
@@ -63,8 +64,17 @@ export const SciFiLayout: FC = () => {
 
       {/* Medieval Fantasy Global Footer */}
       <footer className="scifi-footer fantasy-footer">
-        <div className="footer-bottom">
-          <span>© 2020-2026 PAPUSTANES EN MAZMORRAS</span>
+        <div className="footer-inner">
+          <div className="footer-donation-block">
+            <KofiFooterDonation
+              username="papustanes"
+              label="Invitar un Café"
+              sublabel="Apoya el servidor & las crónicas"
+            />
+          </div>
+          <div className="footer-bottom">
+            <span>© 2020-2026 PAPUSTANES EN MAZMORRAS</span>
+          </div>
         </div>
       </footer>
     </div>
