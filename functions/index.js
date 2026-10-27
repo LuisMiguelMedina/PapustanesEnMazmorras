@@ -11,22 +11,25 @@ const PAYPAL_API = 'https://api-m.paypal.com';
 const MIN_AMOUNT_MXN = 20;
 const ORDER_LOCALE = 'es-MX';
 
-const ALLOWED_ORIGIN_PATTERNS = [
-  /^https:\/\/luismiguelmedina\.github\.io$/,
-  /^http:\/\/localhost(:\d+)?$/,
-  /^http:\/\/127\.0\.0\.1(:\d+)?$/,
+const CORS_ORIGINS = [
+  'https://luismiguelmedina.github.io',
+  /^http:\/\/localhost:\d+$/,
+  /^http:\/\/127\.0\.0\.1:\d+$/,
 ];
 
-/** @param {import('firebase-functions/v2/https').Request} req @param {import('express').Response} res */
-function applyCors(req, res) {
-  const origin = req.get('Origin') || '';
-  const allowed = ALLOWED_ORIGIN_PATTERNS.some((re) => re.test(origin));
-  if (allowed) {
-    res.set('Access-Control-Allow-Origin', origin);
-    res.set('Vary', 'Origin');
+/** @param {import('firebase-functions/v2/https').Request} req */
+function readJsonBody(req) {
+  if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+    return req.body;
   }
-  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type');
+  if (typeof req.rawBody === 'string' && req.rawBody.length > 0) {
+    try {
+      return JSON.parse(req.rawBody);
+    } catch {
+      return {};
+    }
+  }
+  return {};
 }
 
 let tokenCache = { accessToken: null, expiresAtMs: 0 };
@@ -73,10 +76,10 @@ const functionOptions = {
   region: 'us-central1',
   secrets: [paypalClientId, paypalClientSecret],
   invoker: 'public',
+  cors: CORS_ORIGINS,
 };
 
 exports.createDonationOrder = onRequest(functionOptions, async (req, res) => {
-  applyCors(req, res);
   if (req.method === 'OPTIONS') {
     res.status(204).send('');
     return;
@@ -86,11 +89,13 @@ exports.createDonationOrder = onRequest(functionOptions, async (req, res) => {
     return;
   }
 
+  const body = readJsonBody(req);
+
   try {
-    const amount = parseAmount(req.body?.amount);
+    const amount = parseAmount(body.amount);
     const communityName =
-      typeof req.body?.communityName === 'string' && req.body.communityName.trim()
-        ? req.body.communityName.trim().slice(0, 120)
+      typeof body.communityName === 'string' && body.communityName.trim()
+        ? body.communityName.trim().slice(0, 120)
         : 'Papustanes en Mazmorras';
 
     if (amount === null) {
@@ -157,7 +162,6 @@ exports.createDonationOrder = onRequest(functionOptions, async (req, res) => {
 });
 
 exports.captureDonationOrder = onRequest(functionOptions, async (req, res) => {
-  applyCors(req, res);
   if (req.method === 'OPTIONS') {
     res.status(204).send('');
     return;
@@ -167,7 +171,8 @@ exports.captureDonationOrder = onRequest(functionOptions, async (req, res) => {
     return;
   }
 
-  const orderID = req.body?.orderID;
+  const body = readJsonBody(req);
+  const orderID = body.orderID;
   if (!orderID || typeof orderID !== 'string') {
     res.status(400).json({ error: 'orderID requerido' });
     return;
