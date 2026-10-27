@@ -9,10 +9,10 @@
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 0.5rem;
+  padding: 2rem 1.5rem 1.5rem;
 
   @media (max-width: 768px) {
-    padding: 1.25rem 0.75rem 0.5rem;
+    padding: 1.25rem 0.75rem 1.25rem;
   }
 
   /* ---------------- 1. MEDIEVAL FANTASY HEADER ---------------- */
@@ -37,10 +37,14 @@
 
   /* ---------------- 2. CAROUSEL SECTION ---------------- */
   .hub-carousel-section {
-    margin-bottom: 0.35rem;
+    margin-bottom: 1.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    @media (max-width: 768px) {
+      margin-bottom: 1.25rem;
+    }
   }
 
   /* ---------------- 3. CALENDAR SECTION ---------------- */

@@ -6,17 +6,15 @@
 .interactive-calendar-wrapper {
   width: 100%;
   max-width: 800px;
-  margin: 0.15rem auto 0;
+  margin: 0 auto;
   padding: 0 1rem;
 
   @media (max-width: 768px) {
-    margin: 0.5rem auto 0;
     padding: 0 0.5rem;
   }
 
   @media (max-width: 480px) {
     padding: 0 0.25rem;
-    margin: 0.25rem auto 0;
   }
 
   /* ---------------- 1. HEADER CONTROLS ---------------- */
