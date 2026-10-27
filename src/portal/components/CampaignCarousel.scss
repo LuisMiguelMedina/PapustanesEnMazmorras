@@ -6,7 +6,7 @@
 .campaign-carousel-wrapper {
   position: relative;
   width: 100%;
-  margin: 0.5rem 0 0.25rem;
+  margin: 0.5rem 0 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -638,7 +638,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 0.65rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.25rem;
 
     .pip-indicator {
       width: 10px;
