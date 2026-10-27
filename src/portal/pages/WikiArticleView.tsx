@@ -1,5 +1,5 @@
 import { FC, useState, useMemo, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { WikiContentRenderer } from '../components/wiki/WikiContentRenderer';
 import { WikiInfobox } from '../components/wiki/WikiInfobox';
 import { WikiSidebar } from '../components/wiki/WikiSidebar';
@@ -39,6 +39,13 @@ export const WikiArticleView: FC = () => {
 
   const isHomeView = !articleSlug || articleSlug === 'home';
   const isDebug = useDebugMode();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const exitDebugMode = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete('debug');
+    setSearchParams(next, { replace: true });
+  };
 
   const [customContent, setCustomContent] = useState<string | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
@@ -110,6 +117,18 @@ export const WikiArticleView: FC = () => {
             </>
           )}
         </nav>
+
+        {isDebug && (
+          <div className="wiki-debug-banner mb-3" role="status">
+            <span className="wiki-debug-banner__text">
+              <i className="fas fa-terminal me-2" aria-hidden />
+              Modo debug activo (?debug=1): edición y creación habilitadas.
+            </span>
+            <button type="button" className="wiki-debug-banner__exit" onClick={exitDebugMode}>
+              Salir de modo debug
+            </button>
+          </div>
+        )}
 
         {isLoading ? (
           <div className="text-center py-5">

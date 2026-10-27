@@ -1,6 +1,7 @@
 import { FC, useState, useEffect, useCallback, useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../auth';
+import { useDebugMode } from '../hooks/useDebugMode';
 import { CampaignBase, CampaignStatusType } from '../models/Campaigns/CampaignModels';
 import './CampaignCarousel.scss';
 
@@ -44,16 +45,11 @@ export const CampaignCarousel: FC<CampaignCarouselProps> = ({
   onSelectCampaign,
 }) => {
   const { session } = useAuth();
-  const [searchParams] = useSearchParams();
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const debugFromUrl = useDebugMode();
 
   // Active debug mode check: explicit prop or '?debug=1' in query
-  const activeDebug = useMemo(() => {
-    if (isDebug !== undefined) return isDebug;
-    if (searchParams.get('debug') === '1') return true;
-    if (typeof window !== 'undefined' && window.location.search.includes('debug=1')) return true;
-    return false;
-  }, [isDebug, searchParams]);
+  const activeDebug = isDebug !== undefined ? isDebug : debugFromUrl;
 
   // Build items array: campaigns prioritized by status + add world slot only in debug mode (?debug=1)
   const items: CarouselItem[] = useMemo(() => {

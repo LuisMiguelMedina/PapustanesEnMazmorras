@@ -20,6 +20,39 @@
       padding: 1.5rem 1rem 3rem;
     }
 
+    .wiki-debug-banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.65rem 1rem;
+      border-radius: 6px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid #f59e0b;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      color: #fcd34d;
+
+      &__exit {
+        background: transparent;
+        border: 1px solid rgba(252, 211, 77, 0.5);
+        color: #fde68a;
+        padding: 0.25rem 0.65rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: inherit;
+        text-transform: uppercase;
+
+        &:hover {
+          background: rgba(245, 158, 11, 0.2);
+          color: #fff;
+        }
+      }
+    }
+
     .wiki-breadcrumbs {
       display: flex;
       align-items: center;

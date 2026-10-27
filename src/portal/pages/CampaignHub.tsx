@@ -1,6 +1,6 @@
 import { FC, useState, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { CampaignCarousel } from '../components/CampaignCarousel';
+import { useDebugMode } from '../hooks/useDebugMode';
 import { InteractiveCalendar } from '../components/InteractiveCalendar';
 import {
   CampaignBase,
@@ -42,14 +42,7 @@ export const CampaignHub: FC = () => {
     errorMessage,
   } = useCampaignHubViewModel();
 
-  const [searchParams] = useSearchParams();
-
-  // Debug mode active only if query parameter '?debug=1' is present
-  const isDebug = useMemo(() => {
-    if (searchParams.get('debug') === '1') return true;
-    if (typeof window !== 'undefined' && window.location.search.includes('debug=1')) return true;
-    return false;
-  }, [searchParams]);
+  const isDebug = useDebugMode();
 
   // Stored custom campaigns created by user
   const [localExtraCampaigns, setLocalExtraCampaigns] = useState<CampaignBase[]>(() => {

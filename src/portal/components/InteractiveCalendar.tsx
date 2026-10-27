@@ -1,6 +1,6 @@
 import { FC, useState, useEffect, useMemo, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import html2canvas from 'html2canvas';
+import { useDebugMode } from '../hooks/useDebugMode';
 import {
   CalendarEvent,
   CalendarEventOccurrence,
@@ -14,14 +14,7 @@ import './InteractiveCalendar.scss';
 type FollowTab = 'FULL' | 'DM' | 'EVENT';
 
 export const InteractiveCalendar: FC = () => {
-  const [searchParams] = useSearchParams();
-
-  // Debug mode active (?debug=1) allows managing tags
-  const isDebug = useMemo(() => {
-    if (searchParams.get('debug') === '1') return true;
-    if (typeof window !== 'undefined' && window.location.search.includes('debug=1')) return true;
-    return false;
-  }, [searchParams]);
+  const isDebug = useDebugMode();
 
   // Navigation strictly restricted to current month (Octubre 2026) and next month (Noviembre 2026)
   const [monthOffset, setMonthOffset] = useState<0 | 1>(0);
