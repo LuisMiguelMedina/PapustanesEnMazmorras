@@ -10,6 +10,7 @@ import { WikiArticleEditorModal } from '../components/wiki/WikiArticleEditorModa
 import { WikiNewArticleModal } from '../components/wiki/WikiNewArticleModal';
 import { extractHeadings } from '../components/wiki/wikiHelpers';
 import { WikiDataAccess } from '../dataAccess/WikiDataAccess';
+import { useDebugMode } from '../hooks/useDebugMode';
 import { useWikiViewModel } from '../viewModels/useWikiViewModel';
 import './WikiArticleView.scss';
 
@@ -37,6 +38,7 @@ export const WikiArticleView: FC = () => {
   } = useWikiViewModel(campaignID, articleSlug);
 
   const isHomeView = !articleSlug || articleSlug === 'home';
+  const isDebug = useDebugMode();
 
   const [customContent, setCustomContent] = useState<string | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
@@ -91,7 +93,7 @@ export const WikiArticleView: FC = () => {
         searchResults={searchResults}
         onSearchChange={setSearchQuery}
         onSelectCategory={setSelectedCategory}
-        onNewArticle={() => setIsNewArticleOpen(true)}
+        onNewArticle={isDebug ? () => setIsNewArticleOpen(true) : undefined}
       />
 
       <main className="wiki-main-viewport">
@@ -122,7 +124,7 @@ export const WikiArticleView: FC = () => {
             categories={categories}
             articles={articles}
             campaignID={campaignID}
-            onNewArticle={() => setIsNewArticleOpen(true)}
+            onNewArticle={isDebug ? () => setIsNewArticleOpen(true) : undefined}
           />
         ) : currentArticle ? (
           <>
@@ -145,46 +147,48 @@ export const WikiArticleView: FC = () => {
                   <i className="fas fa-folder-open" />
                   {currentArticle.ArticleCategories.join(', ') || 'General'}
                 </span>
-                <div className="meta-actions-cluster">
-                  <button
-                    type="button"
-                    className="btn-edit-article"
-                    onClick={() => setIsEditorOpen(true)}
-                    title="Diseñar o editar este expediente con el editor básico visual o markdown"
-                  >
-                    <i className="fas fa-edit me-1 text-info" />
-                    <span>Editar / Diseñar</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-new-article-meta"
-                    onClick={() => setIsNewArticleOpen(true)}
-                    title="Crear un nuevo expediente para esta campaña"
-                  >
-                    <i className="fas fa-plus me-1 text-success" />
-                    <span>+ Nuevo</span>
-                  </button>
-                  {articles.length > 1 && (
+                {isDebug && (
+                  <div className="meta-actions-cluster">
                     <button
                       type="button"
-                      className="btn-delete-article-meta"
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            `¿Está seguro de que desea eliminar el expediente '${currentArticle.ArticleTitle}'?`,
-                          )
-                        ) {
-                          WikiDataAccess.DeleteArticle(campaignID, currentArticle.ArticleSlug);
-                          refresh();
-                          navigate(`/wiki/${campaignID}`);
-                        }
-                      }}
-                      title="Eliminar este expediente de la Wiki"
+                      className="btn-edit-article"
+                      onClick={() => setIsEditorOpen(true)}
+                      title="Diseñar o editar este expediente (?debug=1)"
                     >
-                      <i className="fas fa-trash-alt text-danger" />
+                      <i className="fas fa-edit me-1 text-info" />
+                      <span>Editar / Diseñar</span>
                     </button>
-                  )}
-                </div>
+                    <button
+                      type="button"
+                      className="btn-new-article-meta"
+                      onClick={() => setIsNewArticleOpen(true)}
+                      title="Crear un nuevo expediente para esta campaña (?debug=1)"
+                    >
+                      <i className="fas fa-plus me-1 text-success" />
+                      <span>+ Nuevo</span>
+                    </button>
+                    {articles.length > 1 && (
+                      <button
+                        type="button"
+                        className="btn-delete-article-meta"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `¿Está seguro de que desea eliminar el expediente '${currentArticle.ArticleTitle}'?`,
+                            )
+                          ) {
+                            WikiDataAccess.DeleteArticle(campaignID, currentArticle.ArticleSlug);
+                            refresh();
+                            navigate(`/wiki/${campaignID}`);
+                          }
+                        }}
+                        title="Eliminar este expediente de la Wiki (?debug=1)"
+                      >
+                        <i className="fas fa-trash-alt text-danger" />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </header>
 
@@ -273,7 +277,7 @@ export const WikiArticleView: FC = () => {
             </footer>
 
             {/* In-Browser Wiki Article & PDF Editor Modal */}
-            {isEditorOpen && currentArticle && (
+            {isDebug && isEditorOpen && currentArticle && (
               <WikiArticleEditorModal
                 isOpen={isEditorOpen}
                 onClose={() => setIsEditorOpen(false)}
@@ -300,20 +304,22 @@ export const WikiArticleView: FC = () => {
                 <i className="fas fa-home me-2" />
                 Ir al Home de la Wiki
               </Link>
-              <button
-                type="button"
-                className="btn btn-info font-monospace text-dark fw-bold"
-                onClick={() => setIsNewArticleOpen(true)}
-              >
-                <i className="fas fa-plus me-1" />
-                Crear Nuevo Artículo
-              </button>
+              {isDebug && (
+                <button
+                  type="button"
+                  className="btn btn-info font-monospace text-dark fw-bold"
+                  onClick={() => setIsNewArticleOpen(true)}
+                >
+                  <i className="fas fa-plus me-1" />
+                  Crear Nuevo Artículo
+                </button>
+              )}
             </div>
           </div>
         )}
 
         {/* Modal to create a new wiki article for this campaign */}
-        {isNewArticleOpen && (
+        {isDebug && isNewArticleOpen && (
           <WikiNewArticleModal
             isOpen={isNewArticleOpen}
             onClose={() => setIsNewArticleOpen(false)}
