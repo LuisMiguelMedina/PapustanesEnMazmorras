@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite --open",
     "build": "tsc --project tsconfig.json --noEmit && vite build",
-    "build:gh-pages": "npm run build && node generate-404.js",
+    "build:gh-pages": "GITHUB_PAGES=true npm run build && node generate-404.js",
+    "sync:gh-pages-root": "cp dist/index.html index.html && rm -rf assets && cp -r dist/assets assets && cp dist/404.html 404.html && cp dist/.nojekyll .nojekyll",
     "preview": "vite preview --host"
   },
   "prettier": {
