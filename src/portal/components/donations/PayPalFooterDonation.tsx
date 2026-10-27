@@ -2,6 +2,7 @@ import { FC, useState, useEffect, useMemo, MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { getDonationPagePath, getDonationShareUrl } from './DonationCopyLinkButton';
+import { captureClientPayPalOrder, createClientPayPalOrder } from './paypalClientOrder';
 import { captureDonationOrderOnServer, createDonationOrderOnServer } from './paypalServerApi';
 import './PayPalFooterDonation.scss';
 
@@ -328,22 +329,38 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                   <PayPalScriptProvider options={paypalScriptOptions}>
                     <PayPalButtons
                       forceReRender={[finalAmount]}
-                      createOrder={async () =>
-                        createDonationOrderOnServer({
-                          amount: finalAmount,
-                          communityName,
-                        })
-                      }
+                      createOrder={async (_data, actions) => {
+                        try {
+                          return await createDonationOrderOnServer({
+                            amount: finalAmount,
+                            communityName,
+                          });
+                        } catch (serverErr) {
+                          console.warn(
+                            'PayPal: servidor de órdenes no disponible; respaldo en cliente.',
+                            serverErr,
+                          );
+                          return createClientPayPalOrder(actions, finalAmount, communityName);
+                        }
+                      }}
                       onApprove={async (data, actions) => {
                         try {
                           setPaymentError(null);
-                          const details = await captureDonationOrderOnServer(data.orderID);
-                          const payer = details as {
+                          let details: {
                             payer?: { name?: { given_name?: string; surname?: string } };
                           };
+                          try {
+                            details = await captureDonationOrderOnServer(data.orderID);
+                          } catch (serverErr) {
+                            console.warn(
+                              'PayPal: captura en servidor no disponible; respaldo en cliente.',
+                              serverErr,
+                            );
+                            details = await captureClientPayPalOrder(actions);
+                          }
                           const donorName =
-                            payer.payer?.name?.given_name ||
-                            payer.payer?.name?.surname ||
+                            details.payer?.name?.given_name ||
+                            details.payer?.name?.surname ||
                             'Aventurero';
                           setPayerName(donorName);
                           setIsSuccess(true);
@@ -365,7 +382,9 @@ export const PayPalFooterDonation: FC<PayPalFooterDonationProps> = ({
                       }}
                       onError={(err) => {
                         console.error('PayPal Buttons error:', err);
-                        setPaymentError('Hubo un inconveniente al cargar PayPal. Revisa tu conexión.');
+                        setPaymentError(
+                          'No se pudo iniciar el pago. Si persiste, recarga la página o prueba sin bloqueador.',
+                        );
                       }}
                       onCancel={() => {
                         setPaymentError(null);
