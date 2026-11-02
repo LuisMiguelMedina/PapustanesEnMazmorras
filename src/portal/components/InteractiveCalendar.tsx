@@ -13,15 +13,32 @@ import './InteractiveCalendar.scss';
 
 type FollowTab = 'FULL' | 'DM' | 'EVENT';
 
+function formatMonthYear(date: Date): string {
+  const rawMonth = new Intl.DateTimeFormat('es-MX', { month: 'long' }).format(date);
+  const capitalized = rawMonth.charAt(0).toUpperCase() + rawMonth.slice(1);
+  return `${capitalized} ${date.getFullYear()}`;
+}
+
 export const InteractiveCalendar: FC = () => {
   const isDebug = useDebugMode();
 
-  // Navigation strictly restricted to current month (Octubre 2026) and next month (Noviembre 2026)
+  // Actual = calendar month containing today; Siguiente = next month only (no past months)
+  const anchorMonth = useMemo(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  }, []);
+
   const [monthOffset, setMonthOffset] = useState<0 | 1>(0);
 
   const displayDate = useMemo(() => {
-    return new Date(2026, 9 + monthOffset, 1);
-  }, [monthOffset]);
+    return new Date(anchorMonth.getFullYear(), anchorMonth.getMonth() + monthOffset, 1);
+  }, [anchorMonth, monthOffset]);
+
+  const currentMonthLabel = useMemo(() => formatMonthYear(anchorMonth), [anchorMonth]);
+  const nextMonthLabel = useMemo(() => {
+    const next = new Date(anchorMonth.getFullYear(), anchorMonth.getMonth() + 1, 1);
+    return formatMonthYear(next);
+  }, [anchorMonth]);
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
 
@@ -185,9 +202,8 @@ export const InteractiveCalendar: FC = () => {
   };
 
   const currentYear = displayDate.getFullYear();
-  const currentMonth = displayDate.getMonth(); // 0-indexed: 9 = Octubre, 10 = Noviembre
+  const currentMonth = displayDate.getMonth();
 
-  // Navigation limits: only current month (offset 0) and next month (offset 1)
   const canGoPrev = monthOffset === 1;
   const canGoNext = monthOffset === 0;
 
@@ -199,12 +215,7 @@ export const InteractiveCalendar: FC = () => {
     if (canGoNext) setMonthOffset(1);
   };
 
-  // Month name formatting in Spanish (e.g. "Octubre 2026", "Noviembre 2026")
-  const monthTitle = useMemo(() => {
-    const rawMonth = new Intl.DateTimeFormat('es-MX', { month: 'long' }).format(displayDate);
-    const capitalized = rawMonth.charAt(0).toUpperCase() + rawMonth.slice(1);
-    return `${capitalized} ${currentYear}`;
-  }, [displayDate, currentYear]);
+  const monthTitle = useMemo(() => formatMonthYear(displayDate), [displayDate]);
 
   // Compute calendar grid days for current month
   const calendarDays = useMemo(() => {
@@ -578,7 +589,7 @@ export const InteractiveCalendar: FC = () => {
                 className={`btn-month-nav ${!canGoPrev ? 'disabled' : ''}`}
                 onClick={handlePrevMonth}
                 disabled={!canGoPrev}
-                title={canGoPrev ? 'Volver al mes actual (Octubre 2026)' : 'Límite: este es el mes actual'}
+                title={canGoPrev ? `Volver al mes actual (${currentMonthLabel})` : 'Límite: este es el mes actual'}
                 aria-label="Mes anterior"
               >
                 <i className="fas fa-chevron-left" />
@@ -591,7 +602,7 @@ export const InteractiveCalendar: FC = () => {
                 className={`btn-month-nav ${!canGoNext ? 'disabled' : ''}`}
                 onClick={handleNextMonth}
                 disabled={!canGoNext}
-                title={canGoNext ? 'Ver mes siguiente (Noviembre 2026)' : 'Límite: solo se permite ver el mes siguiente'}
+                title={canGoNext ? `Ver mes siguiente (${nextMonthLabel})` : 'Límite: solo se permite ver el mes siguiente'}
                 aria-label="Mes siguiente"
               >
                 <i className="fas fa-chevron-right" />
@@ -604,14 +615,14 @@ export const InteractiveCalendar: FC = () => {
                 className={`btn-toggle-month ${monthOffset === 0 ? 'active' : ''}`}
                 onClick={() => setMonthOffset(0)}
               >
-                Octubre 2026 (Actual)
+                {currentMonthLabel} (Actual)
               </button>
               <button
                 type="button"
                 className={`btn-toggle-month ${monthOffset === 1 ? 'active' : ''}`}
                 onClick={() => setMonthOffset(1)}
               >
-                Noviembre 2026 (Siguiente)
+                {nextMonthLabel} (Siguiente)
               </button>
             </div>
           </div>
