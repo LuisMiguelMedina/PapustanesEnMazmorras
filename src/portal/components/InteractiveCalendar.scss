@@ -3,6 +3,47 @@
    Faithful to the official manual design with cyber polish
    ========================================================= */
 
+.calendar-context-menu {
+  z-index: 12000;
+  min-width: 168px;
+  padding: 0.35rem 0;
+  border-radius: 8px;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  background: rgba(10, 12, 20, 0.97);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65), 0 0 20px rgba(245, 158, 11, 0.12);
+
+  &__item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.55rem 0.85rem;
+    border: none;
+    background: transparent;
+    color: #e2e8f0;
+    font-family: var(--font-fantasy-display, inherit);
+    font-size: 0.88rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+
+    &:hover {
+      background: rgba(245, 158, 11, 0.12);
+      color: #ffedd5;
+    }
+
+    &--danger:hover {
+      background: rgba(239, 68, 68, 0.12);
+      color: #fecaca;
+    }
+
+    .context-menu-item-hint {
+      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: #94a3b8;
+    }
+  }
+}
+
 .interactive-calendar-wrapper {
   width: 100%;
   max-width: 800px;

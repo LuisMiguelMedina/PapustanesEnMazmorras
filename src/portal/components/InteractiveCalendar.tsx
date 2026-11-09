@@ -1,4 +1,5 @@
-import { FC, useState, useEffect, useMemo, useRef } from 'react';
+import { FC, useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import html2canvas from 'html2canvas';
 import { useDebugMode } from '../hooks/useDebugMode';
 import {
@@ -94,6 +95,11 @@ export const InteractiveCalendar: FC = () => {
   const [deleteConfirmPrompt, setDeleteConfirmPrompt] = useState<CalendarEventOccurrence | null>(
     null,
   );
+  const [eventContextMenu, setEventContextMenu] = useState<{
+    clientX: number;
+    clientY: number;
+    occurrence: CalendarEventOccurrence;
+  } | null>(null);
 
   // Form state
   const [formTitle, setFormTitle] = useState<string>('');
@@ -108,6 +114,57 @@ export const InteractiveCalendar: FC = () => {
   const [formDesc, setFormDesc] = useState<string>('');
   const [formError, setFormError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  const closeEventContextMenu = useCallback(() => setEventContextMenu(null), []);
+
+  const openEventContextMenu = (e: React.MouseEvent, occurrence: CalendarEventOccurrence) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEventContextMenu({
+      clientX: e.clientX,
+      clientY: e.clientY,
+      occurrence,
+    });
+  };
+
+  useEffect(() => {
+    if (!eventContextMenu) return;
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') closeEventContextMenu();
+    };
+    const onPointerDown = () => closeEventContextMenu();
+    window.addEventListener('keydown', onKey);
+    const timer = window.setTimeout(() => {
+      window.addEventListener('mousedown', onPointerDown);
+    }, 0);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.clearTimeout(timer);
+      window.removeEventListener('mousedown', onPointerDown);
+    };
+  }, [eventContextMenu, closeEventContextMenu]);
+
+  const handleContextMenuEdit = () => {
+    if (!eventContextMenu) return;
+    handleOpenEditModal(eventContextMenu.occurrence);
+    closeEventContextMenu();
+  };
+
+  const handleContextMenuDelete = async () => {
+    const ctx = eventContextMenu;
+    if (!ctx) return;
+    const { occurrence } = ctx;
+    closeEventContextMenu();
+    const evt = occurrence.event;
+    setIsSubmitting(true);
+    const res = shouldOfferSeriesDeleteChoice(evt, occurrence)
+      ? await skipOccurrenceOnSeries(evt, occurrence.instanceDate)
+      : await CalendarDataAccess.DeleteEvent(evt.id);
+    setIsSubmitting(false);
+    if (res.CodeNumber !== 200) {
+      window.alert(res.Message || 'No se pudo eliminar el evento');
+    }
+  };
 
   // Subscribe to Firebase RTDB on mount
   useEffect(() => {
@@ -920,13 +977,25 @@ export const InteractiveCalendar: FC = () => {
                   setDraggingOccurrence(null);
                   setDropHighlightDate(null);
                 }}
+                onContextMenu={(e) => {
+                  if (dayOccurrences.length === 1) {
+                    openEventContextMenu(e, dayOccurrences[0]);
+                  }
+                }}
                 onClick={(e) => {
                   if (e.target === e.currentTarget) {
                     handleOpenCreateModal(cell.dateString!);
                   }
                 }}
               >
-                <div className="cell-top-bar">
+                <div
+                  className="cell-top-bar"
+                  onContextMenu={(e) => {
+                    if (dayOccurrences.length === 1) {
+                      openEventContextMenu(e, dayOccurrences[0]);
+                    }
+                  }}
+                >
                   <span className="day-number">{cell.dayNumber}</span>
                   <button
                     type="button"
@@ -968,6 +1037,7 @@ export const InteractiveCalendar: FC = () => {
                           setDraggingOccurrence(null);
                           setDropHighlightDate(null);
                         }}
+                        onContextMenu={(e) => openEventContextMenu(e, occ)}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleOpenEditModal(occ);
@@ -1847,6 +1917,49 @@ export const InteractiveCalendar: FC = () => {
           </div>
         </div>
       )}
+
+      {eventContextMenu &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className="calendar-context-menu"
+            style={{
+              position: 'fixed',
+              top: Math.min(eventContextMenu.clientY, window.innerHeight - 120),
+              left: Math.min(eventContextMenu.clientX, window.innerWidth - 180),
+            }}
+            role="menu"
+            aria-label="Acciones del evento"
+            onClick={(e) => e.stopPropagation()}
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            <button
+              type="button"
+              role="menuitem"
+              className="calendar-context-menu__item"
+              onClick={handleContextMenuEdit}
+            >
+              <i className="fas fa-pen-to-square me-2" aria-hidden />
+              Editar
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="calendar-context-menu__item calendar-context-menu__item--danger"
+              onClick={() => void handleContextMenuDelete()}
+            >
+              <i className="fas fa-trash-alt me-2" aria-hidden />
+              Eliminar
+              {shouldOfferSeriesDeleteChoice(
+                eventContextMenu.occurrence.event,
+                eventContextMenu.occurrence,
+              ) && (
+                <span className="context-menu-item-hint"> (esta fecha)</span>
+              )}
+            </button>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };
