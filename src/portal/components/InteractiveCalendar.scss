@@ -785,6 +785,40 @@
       overflow: hidden;
       animation: modalScaleIn 0.2s ease-out;
       margin: auto;
+      position: relative;
+
+      &.event-edit-modal .event-modal-inner-confirm {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 1.5rem 1.75rem;
+        background: rgba(8, 10, 18, 0.92);
+        backdrop-filter: blur(4px);
+        border-radius: 12px;
+
+        .inner-confirm-title {
+          font-family: var(--font-fantasy-display, inherit);
+          font-size: 1.05rem;
+          color: #ffedd5;
+          margin: 0 0 0.75rem;
+        }
+
+        .inner-confirm-body {
+          color: #cbd5e1;
+          font-size: 0.92rem;
+          margin-bottom: 1.25rem;
+          line-height: 1.45;
+        }
+
+        .inner-confirm-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 0.55rem;
+        }
+      }
 
       .modal-body-scrollable,
       .follow-modal-body {

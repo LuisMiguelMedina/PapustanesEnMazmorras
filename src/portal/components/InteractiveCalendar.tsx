@@ -11,6 +11,10 @@ import {
   RecurrenceType,
 } from '../models/Calendar/CalendarModels';
 import { daysBetweenIso, shiftIsoDate, uniqueIsoDates } from './calendar/calendarDateUtils';
+import {
+  resolveDeleteOccurrence,
+  shouldOfferSeriesDeleteChoice,
+} from './calendar/calendarDeleteScope';
 import { CalendarDataAccess } from '../dataAccess/CalendarDataAccess';
 import './InteractiveCalendar.scss';
 
@@ -84,10 +88,12 @@ export const InteractiveCalendar: FC = () => {
   const [draggingOccurrence, setDraggingOccurrence] = useState<CalendarEventOccurrence | null>(null);
   const [dropHighlightDate, setDropHighlightDate] = useState<string | null>(null);
   const [recurringScopePrompt, setRecurringScopePrompt] = useState<{
-    kind: 'delete' | 'move';
     occurrence: CalendarEventOccurrence;
-    targetDate?: string;
+    targetDate: string;
   } | null>(null);
+  const [deleteConfirmPrompt, setDeleteConfirmPrompt] = useState<CalendarEventOccurrence | null>(
+    null,
+  );
 
   // Form state
   const [formTitle, setFormTitle] = useState<string>('');
@@ -452,21 +458,21 @@ export const InteractiveCalendar: FC = () => {
     return CalendarDataAccess.SaveEvent({ ...evt, skippedOccurrenceDates: skipped });
   };
 
-  const handleDeleteEvent = async () => {
+  const handleDeleteEvent = () => {
     if (!selectedEvent) return;
+    const occurrence = resolveDeleteOccurrence(selectedEvent, editingOccurrence, formDate);
+    setDeleteConfirmPrompt(occurrence);
+    setFormError('');
+  };
 
-    if (selectedEvent.recurrence !== 'NONE' && editingOccurrence) {
-      setRecurringScopePrompt({ kind: 'delete', occurrence: editingOccurrence });
-      return;
-    }
-
-    const confirmDelete = window.confirm(`¿Estás seguro de eliminar el evento "${selectedEvent.title}"?`);
-    if (!confirmDelete) return;
-
+  const handleConfirmDeleteSingleEvent = async () => {
+    const prompt = deleteConfirmPrompt;
+    if (!prompt) return;
+    const evt = prompt.event;
     setIsSubmitting(true);
-    const res = await CalendarDataAccess.DeleteEvent(selectedEvent.id);
+    const res = await CalendarDataAccess.DeleteEvent(evt.id);
     setIsSubmitting(false);
-
+    setDeleteConfirmPrompt(null);
     if (res.CodeNumber === 200) {
       setShowEventModal(false);
       setEditingOccurrence(null);
@@ -476,13 +482,13 @@ export const InteractiveCalendar: FC = () => {
   };
 
   const handleDeleteSingleOccurrence = async () => {
-    const prompt = recurringScopePrompt;
-    if (!prompt || prompt.kind !== 'delete') return;
-    const evt = prompt.occurrence.event;
+    const prompt = deleteConfirmPrompt;
+    if (!prompt) return;
+    const evt = prompt.event;
     setIsSubmitting(true);
-    const res = await skipOccurrenceOnSeries(evt, prompt.occurrence.instanceDate);
+    const res = await skipOccurrenceOnSeries(evt, prompt.instanceDate);
     setIsSubmitting(false);
-    setRecurringScopePrompt(null);
+    setDeleteConfirmPrompt(null);
     if (res.CodeNumber === 200) {
       setShowEventModal(false);
       setEditingOccurrence(null);
@@ -492,13 +498,13 @@ export const InteractiveCalendar: FC = () => {
   };
 
   const handleDeleteEntireSeries = async () => {
-    const prompt = recurringScopePrompt;
-    if (!prompt || prompt.kind !== 'delete') return;
-  const evt = prompt.occurrence.event;
+    const prompt = deleteConfirmPrompt;
+    if (!prompt) return;
+    const evt = prompt.event;
     setIsSubmitting(true);
     const res = await CalendarDataAccess.DeleteEvent(evt.id);
     setIsSubmitting(false);
-    setRecurringScopePrompt(null);
+    setDeleteConfirmPrompt(null);
     if (res.CodeNumber === 200) {
       setShowEventModal(false);
       setEditingOccurrence(null);
@@ -521,12 +527,12 @@ export const InteractiveCalendar: FC = () => {
       })();
       return;
     }
-    setRecurringScopePrompt({ kind: 'move', occurrence, targetDate });
+    setRecurringScopePrompt({ occurrence, targetDate });
   };
 
   const handleMoveSingleOccurrence = async () => {
     const prompt = recurringScopePrompt;
-    if (!prompt || prompt.kind !== 'move' || !prompt.targetDate) return;
+    if (!prompt || !prompt.targetDate) return;
     const evt = prompt.occurrence.event;
     const fromDate = prompt.occurrence.instanceDate;
     const toDate = prompt.targetDate;
@@ -554,7 +560,7 @@ export const InteractiveCalendar: FC = () => {
 
   const handleMoveEntireSeries = async () => {
     const prompt = recurringScopePrompt;
-    if (!prompt || prompt.kind !== 'move' || !prompt.targetDate) return;
+    if (!prompt || !prompt.targetDate) return;
     const evt = prompt.occurrence.event;
     const delta = daysBetweenIso(prompt.occurrence.instanceDate, prompt.targetDate);
     const newAnchor = shiftIsoDate(evt.date, delta);
@@ -988,8 +994,14 @@ export const InteractiveCalendar: FC = () => {
 
       {/* ---------------- 3. CREATE / EDIT EVENT MODAL ---------------- */}
       {showEventModal && (
-        <div className="calendar-modal-backdrop" onClick={() => setShowEventModal(false)}>
-          <div className="calendar-modal-container" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="calendar-modal-backdrop"
+          onClick={() => {
+            setShowEventModal(false);
+            setDeleteConfirmPrompt(null);
+          }}
+        >
+          <div className="calendar-modal-container event-edit-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-cyber">
               <h3>
                 <i className={selectedEvent ? 'fas fa-edit me-2' : 'fas fa-calendar-plus me-2'} />
@@ -998,7 +1010,10 @@ export const InteractiveCalendar: FC = () => {
               <button
                 type="button"
                 className="btn-modal-close"
-                onClick={() => setShowEventModal(false)}
+                onClick={() => {
+                  setShowEventModal(false);
+                  setDeleteConfirmPrompt(null);
+                }}
               >
                 ✕
               </button>
@@ -1207,6 +1222,70 @@ export const InteractiveCalendar: FC = () => {
                 </div>
               </div>
             </form>
+
+            {deleteConfirmPrompt && selectedEvent && (
+              <div
+                className="event-modal-inner-confirm"
+                role="dialog"
+                aria-labelledby="event-delete-confirm-title"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h4 id="event-delete-confirm-title" className="inner-confirm-title">
+                  <i className="fas fa-trash-alt me-2 text-danger" />
+                  {shouldOfferSeriesDeleteChoice(selectedEvent)
+                    ? '¿Eliminar solo este día o toda la serie?'
+                    : '¿Eliminar este evento?'}
+                </h4>
+                <p className="inner-confirm-body">
+                  <strong>{deleteConfirmPrompt.event.title}</strong>
+                  {shouldOfferSeriesDeleteChoice(selectedEvent) && (
+                    <>
+                      {' '}
+                      — fecha <strong>{deleteConfirmPrompt.instanceDate}</strong>
+                    </>
+                  )}
+                </p>
+                <div className="inner-confirm-actions">
+                  {shouldOfferSeriesDeleteChoice(selectedEvent) ? (
+                    <>
+                      <button
+                        type="button"
+                        className="btn-submit-cyber"
+                        disabled={isSubmitting}
+                        onClick={() => void handleDeleteSingleOccurrence()}
+                      >
+                        Solo este evento (esta fecha)
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-danger-cyber"
+                        disabled={isSubmitting}
+                        onClick={() => void handleDeleteEntireSeries()}
+                      >
+                        Toda la serie repetida
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn-danger-cyber"
+                      disabled={isSubmitting}
+                      onClick={() => void handleConfirmDeleteSingleEvent()}
+                    >
+                      Sí, eliminar evento
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="btn-cancel-cyber"
+                    disabled={isSubmitting}
+                    onClick={() => setDeleteConfirmPrompt(null)}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1506,7 +1585,7 @@ export const InteractiveCalendar: FC = () => {
             <div className="modal-header-cyber">
               <h3>
                 <i className="fas fa-redo-alt me-2 text-warning" />
-                {recurringScopePrompt.kind === 'delete' ? 'Eliminar evento recurrente' : 'Mover evento recurrente'}
+                Mover evento recurrente
               </h3>
               <button
                 type="button"
@@ -1520,21 +1599,14 @@ export const InteractiveCalendar: FC = () => {
               <p className="text-light mb-3">
                 «{recurringScopePrompt.occurrence.event.title}» el{' '}
                 <strong>{recurringScopePrompt.occurrence.instanceDate}</strong>
-                {recurringScopePrompt.kind === 'move' && recurringScopePrompt.targetDate
-                  ? ` → ${recurringScopePrompt.targetDate}`
-                  : ''}
-                . ¿Qué deseas hacer?
+                {` → ${recurringScopePrompt.targetDate}`}. ¿Qué deseas hacer?
               </p>
               <div className="d-flex flex-column gap-2">
                 <button
                   type="button"
                   className="btn-submit-cyber"
                   disabled={isSubmitting}
-                  onClick={() =>
-                    recurringScopePrompt.kind === 'delete'
-                      ? void handleDeleteSingleOccurrence()
-                      : void handleMoveSingleOccurrence()
-                  }
+                  onClick={() => void handleMoveSingleOccurrence()}
                 >
                   Solo esta fecha
                 </button>
@@ -1542,15 +1614,9 @@ export const InteractiveCalendar: FC = () => {
                   type="button"
                   className="btn-action-secondary"
                   disabled={isSubmitting}
-                  onClick={() =>
-                    recurringScopePrompt.kind === 'delete'
-                      ? void handleDeleteEntireSeries()
-                      : void handleMoveEntireSeries()
-                  }
+                  onClick={() => void handleMoveEntireSeries()}
                 >
-                  {recurringScopePrompt.kind === 'delete'
-                    ? 'Eliminar toda la serie'
-                    : 'Mover toda la serie'}
+                  Mover toda la serie
                 </button>
                 <button
                   type="button"
