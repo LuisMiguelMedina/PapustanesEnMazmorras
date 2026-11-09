@@ -6,8 +6,11 @@ import {
   CalendarEventOccurrence,
   CalendarEventTag,
   DEFAULT_TAGS,
+  DEFAULT_CALENDAR_AUTHORS,
+  PRESET_EVENT_STYLES,
   RecurrenceType,
 } from '../models/Calendar/CalendarModels';
+import { daysBetweenIso, shiftIsoDate, uniqueIsoDates } from './calendar/calendarDateUtils';
 import { CalendarDataAccess } from '../dataAccess/CalendarDataAccess';
 import './InteractiveCalendar.scss';
 
@@ -43,10 +46,15 @@ export const InteractiveCalendar: FC = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
 
   // Dynamic tags state loaded from Firebase and local storage
+  const filterCategoryTags = (loaded: CalendarEventTag[]) =>
+    loaded.filter((t) => t.category === 'TYPE');
+
   const [tags, setTags] = useState<CalendarEventTag[]>(() => {
     try {
       const stored = localStorage.getItem('mom_calendar_tags');
-      return stored ? JSON.parse(stored) : DEFAULT_TAGS;
+      const parsed: CalendarEventTag[] = stored ? JSON.parse(stored) : DEFAULT_TAGS;
+      const typeOnly = filterCategoryTags(parsed);
+      return typeOnly.length > 0 ? typeOnly : DEFAULT_TAGS;
     } catch {
       return DEFAULT_TAGS;
     }
@@ -56,10 +64,9 @@ export const InteractiveCalendar: FC = () => {
   const [showTagModal, setShowTagModal] = useState<boolean>(false);
   const [editingTag, setEditingTag] = useState<CalendarEventTag | null>(null);
   const [tagFormLabel, setTagFormLabel] = useState<string>('');
-  const [tagFormCategory, setTagFormCategory] = useState<'TYPE' | 'AUTHOR'>('AUTHOR');
+  const tagFormCategory: 'TYPE' = 'TYPE';
   const [tagFormColor, setTagFormColor] = useState<string>('#8a58f5');
   const [tagFormTextColor, setTagFormTextColor] = useState<string>('#ffffff');
-  const [tagFilterTab, setTagFilterTab] = useState<'ALL' | 'TYPE' | 'AUTHOR'>('ALL');
   const [tagActionMsg, setTagActionMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Modals state
@@ -73,6 +80,14 @@ export const InteractiveCalendar: FC = () => {
   const calendarCaptureRef = useRef<HTMLDivElement>(null);
   const [copyStatus, setCopyStatus] = useState<'IDLE' | 'COPYING' | 'COPIED' | 'DOWNLOADED'>('IDLE');
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [editingOccurrence, setEditingOccurrence] = useState<CalendarEventOccurrence | null>(null);
+  const [draggingOccurrence, setDraggingOccurrence] = useState<CalendarEventOccurrence | null>(null);
+  const [dropHighlightDate, setDropHighlightDate] = useState<string | null>(null);
+  const [recurringScopePrompt, setRecurringScopePrompt] = useState<{
+    kind: 'delete' | 'move';
+    occurrence: CalendarEventOccurrence;
+    targetDate?: string;
+  } | null>(null);
 
   // Form state
   const [formTitle, setFormTitle] = useState<string>('');
@@ -82,6 +97,7 @@ export const InteractiveCalendar: FC = () => {
   const [formCategory, setFormCategory] = useState<string>('CAMPAÑA');
   const [formStyleId, setFormStyleId] = useState<string>('elixir_gradient');
   const [formCustomColor, setFormCustomColor] = useState<string>('');
+  const [formCustomTextColor, setFormCustomTextColor] = useState<string>('#ffffff');
   const [formRecurrence, setFormRecurrence] = useState<RecurrenceType>('NONE');
   const [formDesc, setFormDesc] = useState<string>('');
   const [formError, setFormError] = useState<string>('');
@@ -111,7 +127,8 @@ export const InteractiveCalendar: FC = () => {
   useEffect(() => {
     const unsubTags = CalendarDataAccess.SubscribeTags((loadedTags) => {
       if (loadedTags && loadedTags.length > 0) {
-        setTags(loadedTags);
+        const typeOnly = filterCategoryTags(loadedTags);
+        setTags(typeOnly.length > 0 ? typeOnly : DEFAULT_TAGS);
       }
     });
 
@@ -125,13 +142,11 @@ export const InteractiveCalendar: FC = () => {
     if (tagToEdit) {
       setEditingTag(tagToEdit);
       setTagFormLabel(tagToEdit.label);
-      setTagFormCategory(tagToEdit.category);
       setTagFormColor(tagToEdit.color);
       setTagFormTextColor(tagToEdit.textColor);
     } else {
       setEditingTag(null);
       setTagFormLabel('');
-      setTagFormCategory('AUTHOR');
       setTagFormColor('#8a58f5');
       setTagFormTextColor('#ffffff');
     }
@@ -281,6 +296,10 @@ export const InteractiveCalendar: FC = () => {
 
         const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
+        if (evt.skippedOccurrenceDates?.includes(dateStr)) {
+          continue;
+        }
+
         if (evt.recurrence === 'WEEKLY') {
           const list = map.get(dateStr) || [];
           list.push({ event: evt, instanceDate: dateStr, isRecurringInstance: dateStr !== evt.date });
@@ -309,23 +328,27 @@ export const InteractiveCalendar: FC = () => {
   // Open modal to create a new event
   const handleOpenCreateModal = (targetDate?: string) => {
     setSelectedEvent(null);
+    setEditingOccurrence(null);
     setFormTitle('');
     const defaultDate =
       targetDate ||
       `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
     setFormDate(defaultDate);
     setFormTime('20:00');
-    const firstAuthor = tags.find((t) => t.category === 'AUTHOR') || tags[0];
-    const defaultAuthor = firstAuthor ? firstAuthor.label : 'PAC';
-    setFormAuthor(defaultAuthor);
-    setFormCategory('CAMPAÑA');
-    const initialTag = firstAuthor || tags[0];
-    if (initialTag) {
-      setFormStyleId(initialTag.id);
-      setFormCustomColor(initialTag.color);
+    setFormAuthor(DEFAULT_CALENDAR_AUTHORS[0] || 'PAC');
+    const defaultCategory = tags.find((t) => t.label === 'CAMPAÑA') || tags[0];
+    setFormCategory(defaultCategory?.label || 'CAMPAÑA');
+    const initialPreset = PRESET_EVENT_STYLES[0];
+    if (initialPreset) {
+      setFormStyleId(initialPreset.id);
+      setFormCustomColor(
+        initialPreset.background.startsWith('linear-gradient') ? '#f5a623' : initialPreset.background,
+      );
+      setFormCustomTextColor(initialPreset.textColor);
     } else {
-      setFormStyleId('');
-      setFormCustomColor('');
+      setFormStyleId('custom');
+      setFormCustomColor('#38b6ff');
+      setFormCustomTextColor('#000000');
     }
     setFormRecurrence('NONE');
     setFormDesc('');
@@ -337,25 +360,26 @@ export const InteractiveCalendar: FC = () => {
   const handleOpenEditModal = (occurrence: CalendarEventOccurrence) => {
     const evt = occurrence.event;
     setSelectedEvent(evt);
+    setEditingOccurrence(occurrence);
     setFormTitle(evt.title);
-    setFormDate(evt.date);
+    setFormDate(occurrence.instanceDate);
     setFormTime(evt.time || '20:00');
-    setFormAuthor(evt.authorTag || 'LUISMI');
+    setFormAuthor(evt.authorTag || DEFAULT_CALENDAR_AUTHORS[0] || 'LUISMI');
     setFormCategory(evt.categoryTag || 'CAMPAÑA');
 
-    // Find if evt.colorVariant matches one of the created tags
-    const matchedTag = tags.find(
-      (t) =>
-        t.color.toLowerCase() === evt.colorVariant?.toLowerCase() ||
-        t.label.toUpperCase() === evt.authorTag?.toUpperCase() ||
-        t.label.toUpperCase() === evt.categoryTag?.toUpperCase(),
-    );
-    if (matchedTag) {
-      setFormStyleId(matchedTag.id);
-      setFormCustomColor(matchedTag.color);
+    const matchedPreset =
+      PRESET_EVENT_STYLES.find((p) => p.id === evt.visualStyleId) ||
+      PRESET_EVENT_STYLES.find((p) => p.background.toLowerCase() === evt.colorVariant?.toLowerCase());
+    if (matchedPreset) {
+      setFormStyleId(matchedPreset.id);
+      setFormCustomColor(
+        matchedPreset.background.startsWith('linear-gradient') ? '#f5a623' : matchedPreset.background,
+      );
+      setFormCustomTextColor(matchedPreset.textColor);
     } else {
       setFormStyleId('custom');
       setFormCustomColor(evt.colorVariant);
+      setFormCustomTextColor(evt.textColor || '#ffffff');
     }
 
     setFormRecurrence(evt.recurrence);
@@ -383,16 +407,16 @@ export const InteractiveCalendar: FC = () => {
     let colorVariant = '#38b6ff';
     let textColor = '#000000';
 
-    const selectedTag = tags.find((t) => t.id === formStyleId);
-    if (selectedTag) {
-      colorVariant = selectedTag.color;
-      textColor = selectedTag.textColor || '#ffffff';
-    } else if (formCustomColor) {
+    const selectedPreset = PRESET_EVENT_STYLES.find((p) => p.id === formStyleId);
+    if (selectedPreset) {
+      colorVariant = selectedPreset.background;
+      textColor = selectedPreset.textColor;
+    } else if (formStyleId === 'custom' && formCustomColor) {
       colorVariant = formCustomColor;
-      textColor = selectedEvent?.textColor || '#000000';
-    } else if (tags.length > 0) {
-      colorVariant = tags[0].color;
-      textColor = tags[0].textColor || '#ffffff';
+      textColor = formCustomTextColor;
+    } else if (PRESET_EVENT_STYLES.length > 0) {
+      colorVariant = PRESET_EVENT_STYLES[0].background;
+      textColor = PRESET_EVENT_STYLES[0].textColor;
     }
 
     setIsSubmitting(true);
@@ -407,8 +431,10 @@ export const InteractiveCalendar: FC = () => {
       categoryTag: formCategory,
       colorVariant,
       textColor,
+      visualStyleId: selectedPreset ? selectedPreset.id : formStyleId === 'custom' ? 'custom' : undefined,
       recurrence: formRecurrence,
       description: formDesc.trim(),
+      skippedOccurrenceDates: selectedEvent?.skippedOccurrenceDates,
     };
 
     const res = await CalendarDataAccess.SaveEvent(eventPayload);
@@ -421,9 +447,19 @@ export const InteractiveCalendar: FC = () => {
     }
   };
 
-  // Delete event
+  const skipOccurrenceOnSeries = async (evt: CalendarEvent, instanceDate: string) => {
+    const skipped = uniqueIsoDates([...(evt.skippedOccurrenceDates || []), instanceDate]);
+    return CalendarDataAccess.SaveEvent({ ...evt, skippedOccurrenceDates: skipped });
+  };
+
   const handleDeleteEvent = async () => {
     if (!selectedEvent) return;
+
+    if (selectedEvent.recurrence !== 'NONE' && editingOccurrence) {
+      setRecurringScopePrompt({ kind: 'delete', occurrence: editingOccurrence });
+      return;
+    }
+
     const confirmDelete = window.confirm(`¿Estás seguro de eliminar el evento "${selectedEvent.title}"?`);
     if (!confirmDelete) return;
 
@@ -433,8 +469,104 @@ export const InteractiveCalendar: FC = () => {
 
     if (res.CodeNumber === 200) {
       setShowEventModal(false);
+      setEditingOccurrence(null);
     } else {
       setFormError(res.Message || 'Error al eliminar el evento');
+    }
+  };
+
+  const handleDeleteSingleOccurrence = async () => {
+    const prompt = recurringScopePrompt;
+    if (!prompt || prompt.kind !== 'delete') return;
+    const evt = prompt.occurrence.event;
+    setIsSubmitting(true);
+    const res = await skipOccurrenceOnSeries(evt, prompt.occurrence.instanceDate);
+    setIsSubmitting(false);
+    setRecurringScopePrompt(null);
+    if (res.CodeNumber === 200) {
+      setShowEventModal(false);
+      setEditingOccurrence(null);
+    } else {
+      setFormError(res.Message || 'No se pudo omitir esta ocurrencia');
+    }
+  };
+
+  const handleDeleteEntireSeries = async () => {
+    const prompt = recurringScopePrompt;
+    if (!prompt || prompt.kind !== 'delete') return;
+  const evt = prompt.occurrence.event;
+    setIsSubmitting(true);
+    const res = await CalendarDataAccess.DeleteEvent(evt.id);
+    setIsSubmitting(false);
+    setRecurringScopePrompt(null);
+    if (res.CodeNumber === 200) {
+      setShowEventModal(false);
+      setEditingOccurrence(null);
+    } else {
+      setFormError(res.Message || 'Error al eliminar la serie');
+    }
+  };
+
+  const handleDropOccurrence = (occurrence: CalendarEventOccurrence, targetDate: string) => {
+    if (occurrence.instanceDate === targetDate) return;
+    const evt = occurrence.event;
+    if (evt.recurrence === 'NONE') {
+      void (async () => {
+        setIsSubmitting(true);
+        const res = await CalendarDataAccess.SaveEvent({ ...evt, date: targetDate });
+        setIsSubmitting(false);
+        if (res.CodeNumber !== 200) {
+          window.alert(res.Message || 'No se pudo mover el evento');
+        }
+      })();
+      return;
+    }
+    setRecurringScopePrompt({ kind: 'move', occurrence, targetDate });
+  };
+
+  const handleMoveSingleOccurrence = async () => {
+    const prompt = recurringScopePrompt;
+    if (!prompt || prompt.kind !== 'move' || !prompt.targetDate) return;
+    const evt = prompt.occurrence.event;
+    const fromDate = prompt.occurrence.instanceDate;
+    const toDate = prompt.targetDate;
+    setIsSubmitting(true);
+    const skipRes = await skipOccurrenceOnSeries(evt, fromDate);
+    if (skipRes.CodeNumber !== 200) {
+      setIsSubmitting(false);
+      setFormError(skipRes.Message || 'No se pudo omitir la fecha original');
+      return;
+    }
+    const oneOff: CalendarEvent = {
+      ...evt,
+      id: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      date: toDate,
+      recurrence: 'NONE',
+      skippedOccurrenceDates: undefined,
+    };
+    const createRes = await CalendarDataAccess.SaveEvent(oneOff);
+    setIsSubmitting(false);
+    setRecurringScopePrompt(null);
+    if (createRes.CodeNumber !== 200) {
+      setFormError(createRes.Message || 'No se pudo crear el evento en la nueva fecha');
+    }
+  };
+
+  const handleMoveEntireSeries = async () => {
+    const prompt = recurringScopePrompt;
+    if (!prompt || prompt.kind !== 'move' || !prompt.targetDate) return;
+    const evt = prompt.occurrence.event;
+    const delta = daysBetweenIso(prompt.occurrence.instanceDate, prompt.targetDate);
+    const newAnchor = shiftIsoDate(evt.date, delta);
+    setIsSubmitting(true);
+    const res = await CalendarDataAccess.SaveEvent({ ...evt, date: newAnchor });
+    setIsSubmitting(false);
+    setRecurringScopePrompt(null);
+    if (res.CodeNumber === 200) {
+      setShowEventModal(false);
+      setEditingOccurrence(null);
+    } else {
+      setFormError(res.Message || 'No se pudo mover la serie');
     }
   };
 
@@ -706,6 +838,18 @@ export const InteractiveCalendar: FC = () => {
               <span className="btn-label-desktop">Seguir Evento</span>
               <span className="btn-label-mobile">Por Evento</span>
             </button>
+
+            {isDebug && (
+              <button
+                type="button"
+                className="btn-debug-manage-tags"
+                onClick={() => handleOpenTagManager()}
+                title="Administrar categorías de evento (?debug=1)"
+              >
+                <i className="fas fa-sliders-h me-1" />
+                <span className="btn-label-desktop">Categorías</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -749,7 +893,27 @@ export const InteractiveCalendar: FC = () => {
             return (
               <div
                 key={cell.dateString}
-                className={`calendar-cell cell-active ${isToday ? 'cell-today' : ''}`}
+                className={`calendar-cell cell-active ${isToday ? 'cell-today' : ''} ${
+                  dropHighlightDate === cell.dateString ? 'cell-drop-target' : ''
+                }`}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDropHighlightDate(cell.dateString);
+                }}
+                onDragLeave={() => {
+                  if (dropHighlightDate === cell.dateString) {
+                    setDropHighlightDate(null);
+                  }
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (draggingOccurrence && cell.dateString) {
+                    handleDropOccurrence(draggingOccurrence, cell.dateString);
+                  }
+                  setDraggingOccurrence(null);
+                  setDropHighlightDate(null);
+                }}
                 onClick={(e) => {
                   if (e.target === e.currentTarget) {
                     handleOpenCreateModal(cell.dateString!);
@@ -778,10 +942,25 @@ export const InteractiveCalendar: FC = () => {
                     return (
                       <div
                         key={`${evt.id}-${occIdx}`}
-                        className="calendar-event-pill"
+                        className={`calendar-event-pill ${
+                          draggingOccurrence?.event.id === evt.id &&
+                          draggingOccurrence.instanceDate === occ.instanceDate
+                            ? 'is-dragging'
+                            : ''
+                        }`}
                         style={{
                           background: evt.colorVariant,
                           color: evt.textColor || '#000000',
+                        }}
+                        draggable
+                        onDragStart={(e) => {
+                          e.stopPropagation();
+                          setDraggingOccurrence(occ);
+                          e.dataTransfer.effectAllowed = 'move';
+                        }}
+                        onDragEnd={() => {
+                          setDraggingOccurrence(null);
+                          setDropHighlightDate(null);
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -789,7 +968,7 @@ export const InteractiveCalendar: FC = () => {
                         }}
                         title={`${evt.title} (${evt.time}) - Organiza: ${evt.authorTag}${
                           evt.recurrence !== 'NONE' ? ' [Recurrente]' : ''
-                        }`}
+                        }. Arrastra a otro día para cambiar la fecha.`}
                       >
                         <span className="pill-time-badge">{evt.time}</span>
                         <span className="pill-title-text">{evt.title}</span>
@@ -805,61 +984,9 @@ export const InteractiveCalendar: FC = () => {
           })}
         </div>
       </div>
-
-      {/* ---------------- 3. BOTTOM LEGEND BAR ---------------- */}
-      <div className="calendar-bottom-legend">
-        <span className="legend-indicator">
-          <i className="fas fa-tags me-1" />
-          <span className="legend-indicator-text">Etiquetas</span>
-        </span>
-
-        <div className="legend-flat-pills">
-          {tags.filter((t) => t.category === 'TYPE').map((tag) => (
-            <span
-              key={tag.id}
-              className={`legend-pill ${isDebug ? 'legend-pill-debug' : ''}`}
-              style={{ background: tag.color, color: tag.textColor || '#ffffff' }}
-              onClick={() => isDebug && handleOpenTagManager(tag)}
-              title={isDebug ? `Clic para editar "${tag.label}" (?debug=1)` : `${tag.label} (Tipo de Evento)`}
-            >
-              {tag.label}
-              {isDebug && <i className="fas fa-pen ms-1 debug-tag-icon" />}
-            </span>
-          ))}
-
-          {tags.some((t) => t.category === 'TYPE') && tags.some((t) => t.category === 'AUTHOR') && (
-            <span className="legend-pill-separator" aria-hidden="true">•</span>
-          )}
-
-          {tags.filter((t) => t.category === 'AUTHOR').map((tag) => (
-            <span
-              key={tag.id}
-              className={`legend-pill ${isDebug ? 'legend-pill-debug' : ''}`}
-              style={{ background: tag.color, color: tag.textColor || '#ffffff' }}
-              onClick={() => isDebug && handleOpenTagManager(tag)}
-              title={isDebug ? `Clic para editar "${tag.label}" (?debug=1)` : `${tag.label} (DM / Autor)`}
-            >
-              {tag.label}
-              {isDebug && <i className="fas fa-pen ms-1 debug-tag-icon" />}
-            </span>
-          ))}
-        </div>
-
-        {isDebug && (
-          <button
-            type="button"
-            className="btn-debug-manage-tags"
-            onClick={() => handleOpenTagManager()}
-            title="Administrar etiquetas: crear, editar o eliminar (?debug=1)"
-          >
-            <i className="fas fa-sliders-h me-1" />
-            <span>Gestionar (?debug=1)</span>
-          </button>
-        )}
       </div>
-    </div>
 
-      {/* ---------------- 4. CREATE / EDIT EVENT MODAL ---------------- */}
+      {/* ---------------- 3. CREATE / EDIT EVENT MODAL ---------------- */}
       {showEventModal && (
         <div className="calendar-modal-backdrop" onClick={() => setShowEventModal(false)}>
           <div className="calendar-modal-container" onClick={(e) => e.stopPropagation()}>
@@ -931,11 +1058,11 @@ export const InteractiveCalendar: FC = () => {
               {/* Author & Category Selection */}
               <div className="form-grid-2">
                 <div className="form-row">
-                  <label>Organizador / Etiqueta de Autor</label>
+                  <label>Organizador / DM</label>
                   <select value={formAuthor} onChange={(e) => setFormAuthor(e.target.value)}>
-                    {tags.filter((t) => t.category === 'AUTHOR').map((tag) => (
-                      <option key={tag.id} value={tag.label}>
-                        {tag.label}
+                    {DEFAULT_CALENDAR_AUTHORS.map((author) => (
+                      <option key={author} value={author}>
+                        {author}
                       </option>
                     ))}
                   </select>
@@ -976,40 +1103,61 @@ export const InteractiveCalendar: FC = () => {
 
               {/* Visual Style Selection */}
               <div className="form-row">
-                <label>Estilo Visual del Pill (Etiquetas Creadas)</label>
+                <label>Color del evento (independiente del autor y la categoría)</label>
                 <div className="style-preset-selector">
-                  {tags.map((tag) => (
+                  {PRESET_EVENT_STYLES.map((preset) => (
                     <button
-                      key={tag.id}
+                      key={preset.id}
                       type="button"
-                      className={`preset-style-btn ${formStyleId === tag.id ? 'active' : ''}`}
-                      style={{ background: tag.color, color: tag.textColor || '#ffffff' }}
+                      className={`preset-style-btn ${formStyleId === preset.id ? 'active' : ''}`}
+                      style={{ background: preset.background, color: preset.textColor }}
                       onClick={() => {
-                        setFormStyleId(tag.id);
-                        setFormCustomColor(tag.color);
-                        if (tag.category === 'AUTHOR') {
-                          setFormAuthor(tag.label);
-                        } else if (tag.category === 'TYPE') {
-                          setFormCategory(tag.label);
-                        }
+                        setFormStyleId(preset.id);
+                        setFormCustomColor(
+                          preset.background.startsWith('linear-gradient') ? '#f5a623' : preset.background,
+                        );
+                        setFormCustomTextColor(preset.textColor);
                       }}
-                      title={`Etiqueta: ${tag.label} (${tag.category === 'AUTHOR' ? 'Autor' : 'Tipo'})`}
+                      title={preset.label}
                     >
-                      {tag.label}
+                      {preset.label}
                     </button>
                   ))}
-                  {formCustomColor && !tags.some((t) => t.color.toLowerCase() === formCustomColor.toLowerCase()) && (
+                  <button
+                    type="button"
+                    className={`preset-style-btn ${formStyleId === 'custom' ? 'active' : ''}`}
+                    style={{ background: formCustomColor, color: formCustomTextColor }}
+                    onClick={() => setFormStyleId('custom')}
+                    title="Color personalizado para este evento"
+                  >
+                    Personalizado
+                  </button>
+                </div>
+                {formStyleId === 'custom' && (
+                  <div className="d-flex flex-wrap align-items-center gap-2 mt-2">
+                    <input
+                      type="color"
+                      className="color-picker-input-cyber"
+                      value={formCustomColor.startsWith('#') ? formCustomColor : '#38b6ff'}
+                      onChange={(e) => setFormCustomColor(e.target.value)}
+                      aria-label="Color de fondo del evento"
+                    />
                     <button
                       type="button"
-                      className={`preset-style-btn ${formStyleId === 'custom' ? 'active' : ''}`}
-                      style={{ background: formCustomColor, color: selectedEvent?.textColor || '#000000' }}
-                      onClick={() => setFormStyleId('custom')}
-                      title="Estilo especial o degradado actual del evento"
+                      className={`btn-tag-text-color ${formCustomTextColor === '#ffffff' ? 'active' : ''}`}
+                      onClick={() => setFormCustomTextColor('#ffffff')}
                     >
-                      {selectedEvent?.title === 'ELIXIR' ? 'ELIXIR' : 'Especial'}
+                      Texto blanco
                     </button>
-                  )}
-                </div>
+                    <button
+                      type="button"
+                      className={`btn-tag-text-color ${formCustomTextColor === '#000000' ? 'active' : ''}`}
+                      onClick={() => setFormCustomTextColor('#000000')}
+                    >
+                      Texto negro
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Notes / Description */}
@@ -1178,18 +1326,14 @@ export const InteractiveCalendar: FC = () => {
                   <div className="dm-selector-box mb-3">
                     <label className="section-small-label">Selecciona tu Game Master / Organizador:</label>
                     <div className="dm-pills-row">
-                      {tags.filter((t) => t.category === 'AUTHOR').map((tag) => (
+                      {DEFAULT_CALENDAR_AUTHORS.map((author) => (
                         <button
-                          key={tag.id}
+                          key={author}
                           type="button"
-                          className={`dm-pick-btn ${selectedFollowDm === tag.label ? 'active' : ''}`}
-                          style={{
-                            background: tag.color,
-                            color: tag.textColor,
-                          }}
-                          onClick={() => setSelectedFollowDm(tag.label)}
+                          className={`dm-pick-btn ${selectedFollowDm === author ? 'active' : ''}`}
+                          onClick={() => setSelectedFollowDm(author)}
                         >
-                          {tag.label}
+                          {author}
                         </button>
                       ))}
                     </div>
@@ -1368,6 +1512,71 @@ export const InteractiveCalendar: FC = () => {
       )}
 
       {/* ---------------- 5. TAG MANAGEMENT MODAL (DEBUG MODE ONLY) ---------------- */}
+      {recurringScopePrompt && (
+        <div className="calendar-modal-backdrop recurring-scope-backdrop">
+          <div className="calendar-modal-container recurring-scope-modal">
+            <div className="modal-header-cyber">
+              <h3>
+                <i className="fas fa-redo-alt me-2 text-warning" />
+                {recurringScopePrompt.kind === 'delete' ? 'Eliminar evento recurrente' : 'Mover evento recurrente'}
+              </h3>
+              <button
+                type="button"
+                className="btn-modal-close"
+                onClick={() => setRecurringScopePrompt(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="modal-body-scrollable">
+              <p className="text-light mb-3">
+                «{recurringScopePrompt.occurrence.event.title}» el{' '}
+                <strong>{recurringScopePrompt.occurrence.instanceDate}</strong>
+                {recurringScopePrompt.kind === 'move' && recurringScopePrompt.targetDate
+                  ? ` → ${recurringScopePrompt.targetDate}`
+                  : ''}
+                . ¿Qué deseas hacer?
+              </p>
+              <div className="d-flex flex-column gap-2">
+                <button
+                  type="button"
+                  className="btn-submit-cyber"
+                  disabled={isSubmitting}
+                  onClick={() =>
+                    recurringScopePrompt.kind === 'delete'
+                      ? void handleDeleteSingleOccurrence()
+                      : void handleMoveSingleOccurrence()
+                  }
+                >
+                  Solo esta fecha
+                </button>
+                <button
+                  type="button"
+                  className="btn-action-secondary"
+                  disabled={isSubmitting}
+                  onClick={() =>
+                    recurringScopePrompt.kind === 'delete'
+                      ? void handleDeleteEntireSeries()
+                      : void handleMoveEntireSeries()
+                  }
+                >
+                  {recurringScopePrompt.kind === 'delete'
+                    ? 'Eliminar toda la serie'
+                    : 'Mover toda la serie'}
+                </button>
+                <button
+                  type="button"
+                  className="btn-cancel-cyber"
+                  onClick={() => setRecurringScopePrompt(null)}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showTagModal && isDebug && (
         <div className="calendar-modal-backdrop" onClick={() => setShowTagModal(false)}>
           <div
@@ -1377,7 +1586,7 @@ export const InteractiveCalendar: FC = () => {
             <div className="modal-header-cyber">
               <h3>
                 <i className="fas fa-tags me-2 text-warning" />
-                Gestionar Etiquetas del Calendario
+                Categorías de evento (tipo / color por defecto)
               </h3>
               <button
                 type="button"
@@ -1442,16 +1651,6 @@ export const InteractiveCalendar: FC = () => {
                       />
                     </div>
 
-                    <div className="col-md-6 form-row">
-                      <label>Categoría</label>
-                      <select
-                        value={tagFormCategory}
-                        onChange={(e) => setTagFormCategory(e.target.value as 'TYPE' | 'AUTHOR')}
-                      >
-                        <option value="AUTHOR">Autor / Game Master (AUTHOR)</option>
-                        <option value="TYPE">Tipo / Categoría de Evento (TYPE)</option>
-                      </select>
-                    </div>
                   </div>
 
                   <div className="row g-2 mb-3 align-items-center">
@@ -1531,35 +1730,10 @@ export const InteractiveCalendar: FC = () => {
                   <h4 className="mb-0 fs-6 text-uppercase fw-bold text-warning">
                     Etiquetas Registradas ({tags.length})
                   </h4>
-                  <div className="tags-tab-filter">
-                    <button
-                      type="button"
-                      className={`tab-btn ${tagFilterTab === 'ALL' ? 'active' : ''}`}
-                      onClick={() => setTagFilterTab('ALL')}
-                    >
-                      Todas ({tags.length})
-                    </button>
-                    <button
-                      type="button"
-                      className={`tab-btn ${tagFilterTab === 'AUTHOR' ? 'active' : ''}`}
-                      onClick={() => setTagFilterTab('AUTHOR')}
-                    >
-                      Autores ({tags.filter((t) => t.category === 'AUTHOR').length})
-                    </button>
-                    <button
-                      type="button"
-                      className={`tab-btn ${tagFilterTab === 'TYPE' ? 'active' : ''}`}
-                      onClick={() => setTagFilterTab('TYPE')}
-                    >
-                      Tipos ({tags.filter((t) => t.category === 'TYPE').length})
-                    </button>
-                  </div>
                 </div>
 
                 <div className="tags-grid-items">
-                  {tags
-                    .filter((t) => tagFilterTab === 'ALL' || t.category === tagFilterTab)
-                    .map((tag) => (
+                  {tags.map((tag) => (
                       <div key={tag.id} className="tag-item-card">
                         <span
                           className="legend-pill"
@@ -1568,19 +1742,14 @@ export const InteractiveCalendar: FC = () => {
                           {tag.label}
                         </span>
 
-                        <span className="badge-tag-category">
-                          {tag.category === 'AUTHOR' ? 'AUTOR' : 'TIPO'}
-                        </span>
-
                         <div className="tag-item-actions">
                           <button
                             type="button"
                             className="btn-action-edit"
-                            title="Editar esta etiqueta"
+                            title="Editar esta categoría"
                             onClick={() => {
                               setEditingTag(tag);
                               setTagFormLabel(tag.label);
-                              setTagFormCategory(tag.category);
                               setTagFormColor(tag.color);
                               setTagFormTextColor(tag.textColor);
                               setTagActionMsg(null);

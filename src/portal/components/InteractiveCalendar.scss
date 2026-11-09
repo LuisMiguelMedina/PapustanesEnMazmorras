@@ -481,6 +481,12 @@
               opacity: 1;
             }
           }
+
+          &.cell-drop-target {
+            background: #fff7ed;
+            outline: 2px dashed rgba(245, 158, 11, 0.75);
+            outline-offset: -2px;
+          }
         }
 
         &.cell-today {
@@ -560,7 +566,7 @@
           border-radius: 999px;
           border: 1px solid #000000;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-          cursor: pointer;
+          cursor: grab;
           transition: transform 0.15s, box-shadow 0.15s;
           text-align: left;
           line-height: 1.1;
@@ -573,6 +579,11 @@
           &:hover {
             transform: scale(1.02);
             box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+          }
+
+          &.is-dragging {
+            opacity: 0.55;
+            cursor: grabbing;
           }
 
           .pill-time-badge {

@@ -17,7 +17,11 @@ export interface CalendarEvent {
   categoryTag: string; // EVENTOS, WEAS CORTAS, CAMPAÑA
   colorVariant: string; // Color hexadecimal o CSS gradient para el pill
   textColor: string; // #000000 o #ffffff
+  /** Id de `PRESET_EVENT_STYLES` cuando aplica (p. ej. degradados). */
+  visualStyleId?: string;
   recurrence: RecurrenceType;
+  /** Ocurrencias recurrentes omitidas (YYYY-MM-DD). */
+  skippedOccurrenceDates?: string[];
   description?: string;
   foundryUrl?: string;
   updatedAt?: number;
@@ -32,20 +36,24 @@ export interface CalendarEventOccurrence {
 /**
  * Etiquetas oficiales del sistema (según imagen del calendario manual).
  */
+/** Categorías de evento (solo tipo; colores por defecto). */
 export const DEFAULT_TAGS: CalendarEventTag[] = [
-  // Categorías de eventos
   { id: 'eventos', label: 'EVENTOS', color: '#5814e5', textColor: '#ffffff', category: 'TYPE' },
   { id: 'weas_cortas', label: 'WEAS CORTAS', color: '#f5a623', textColor: '#000000', category: 'TYPE' },
-  // Autores / Participantes
-  { id: 'fred', label: 'FRED', color: '#8a58f5', textColor: '#ffffff', category: 'AUTHOR' },
-  { id: 'paco', label: 'PACO', color: '#8b1e0f', textColor: '#ffffff', category: 'AUTHOR' },
-  { id: 'leo_alv', label: 'LEO ALV', color: '#111111', textColor: '#ffffff', category: 'AUTHOR' },
-  { id: 'luismi', label: 'LUISMI', color: '#005bb5', textColor: '#ffffff', category: 'AUTHOR' },
-  { id: 'aldana', label: 'ALDANA', color: '#38b6ff', textColor: '#000000', category: 'AUTHOR' },
-  { id: 'bruno', label: 'BRUNO', color: '#ec4899', textColor: '#ffffff', category: 'AUTHOR' },
-  { id: 'pac', label: 'PAC', color: '#7ed957', textColor: '#000000', category: 'AUTHOR' },
-  { id: 'maruco', label: 'MARUCO', color: '#66a15e', textColor: '#ffffff', category: 'AUTHOR' },
+  { id: 'campana', label: 'CAMPAÑA', color: '#7c3aed', textColor: '#ffffff', category: 'TYPE' },
 ];
+
+/** Organizadores / DMs (independientes del color del pill). */
+export const DEFAULT_CALENDAR_AUTHORS = [
+  'FRED',
+  'PACO',
+  'LEO ALV',
+  'LUISMI',
+  'ALDANA',
+  'BRUNO',
+  'PAC',
+  'MARUCO',
+] as const;
 
 /**
  * Paleta de estilos visuales para los pills de los eventos.
