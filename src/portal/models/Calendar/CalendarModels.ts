@@ -58,65 +58,21 @@ export const DEFAULT_CALENDAR_AUTHORS = [
 /**
  * Paleta de estilos visuales para los pills de los eventos.
  */
+/** Colores por defecto del calendario (sin vincular nombres de autores). */
 export const PRESET_EVENT_STYLES = [
-  {
-    id: 'cyan',
-    label: 'Cyan (Pokémon / Zenith)',
-    background: '#38b6ff',
-    textColor: '#000000',
-  },
+  { id: 'cyan', label: 'Cyan', background: '#38b6ff', textColor: '#000000' },
   {
     id: 'elixir_gradient',
-    label: 'Elixir (Degradado Oro a Lima)',
+    label: 'Degradado oro–lima',
     background: 'linear-gradient(135deg, #f5a623 0%, #7ed957 100%)',
     textColor: '#000000',
   },
-  {
-    id: 'purple_reveil',
-    label: 'Púrpura (RE:VEIL)',
-    background: '#7c3aed',
-    textColor: '#ffffff',
-  },
-  {
-    id: 'deep_halloween',
-    label: 'Púrpura Oscuro (Halloween)',
-    background: '#5814e5',
-    textColor: '#ffffff',
-  },
-  {
-    id: 'black_ops',
-    label: 'Negro Ops (Leo Alv)',
-    background: '#111111',
-    textColor: '#ffffff',
-  },
-  {
-    id: 'crimson',
-    label: 'Carmesí (Paco)',
-    background: '#8b1e0f',
-    textColor: '#ffffff',
-  },
-  {
-    id: 'pink_bruno',
-    label: 'Magenta (Bruno)',
-    background: '#ec4899',
-    textColor: '#ffffff',
-  },
-  {
-    id: 'blue_luismi',
-    label: 'Azul Real (Luismi)',
-    background: '#005bb5',
-    textColor: '#ffffff',
-  },
-  {
-    id: 'lime_pac',
-    label: 'Lima Neón (Pac)',
-    background: '#7ed957',
-    textColor: '#000000',
-  },
-  {
-    id: 'olive_maruco',
-    label: 'Verde Oliva (Maruco)',
-    background: '#66a15e',
-    textColor: '#ffffff',
-  },
+  { id: 'purple_reveil', label: 'Púrpura', background: '#7c3aed', textColor: '#ffffff' },
+  { id: 'deep_halloween', label: 'Púrpura oscuro', background: '#5814e5', textColor: '#ffffff' },
+  { id: 'black_ops', label: 'Negro', background: '#111111', textColor: '#ffffff' },
+  { id: 'crimson', label: 'Carmesí', background: '#8b1e0f', textColor: '#ffffff' },
+  { id: 'pink_bruno', label: 'Magenta', background: '#ec4899', textColor: '#ffffff' },
+  { id: 'blue_luismi', label: 'Azul real', background: '#005bb5', textColor: '#ffffff' },
+  { id: 'lime_pac', label: 'Lima neón', background: '#7ed957', textColor: '#000000' },
+  { id: 'olive_maruco', label: 'Verde oliva', background: '#66a15e', textColor: '#ffffff' },
 ];

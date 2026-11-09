@@ -335,7 +335,7 @@ export const InteractiveCalendar: FC = () => {
       `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
     setFormDate(defaultDate);
     setFormTime('20:00');
-    setFormAuthor(DEFAULT_CALENDAR_AUTHORS[0] || 'PAC');
+    setFormAuthor('PAPUSTANES');
     const defaultCategory = tags.find((t) => t.label === 'CAMPAÑA') || tags[0];
     setFormCategory(defaultCategory?.label || 'CAMPAÑA');
     const initialPreset = PRESET_EVENT_STYLES[0];
@@ -364,7 +364,7 @@ export const InteractiveCalendar: FC = () => {
     setFormTitle(evt.title);
     setFormDate(occurrence.instanceDate);
     setFormTime(evt.time || '20:00');
-    setFormAuthor(evt.authorTag || DEFAULT_CALENDAR_AUTHORS[0] || 'LUISMI');
+    setFormAuthor(evt.authorTag || 'PAPUSTANES');
     setFormCategory(evt.categoryTag || 'CAMPAÑA');
 
     const matchedPreset =
@@ -1055,30 +1055,16 @@ export const InteractiveCalendar: FC = () => {
                 </div>
               </div>
 
-              {/* Author & Category Selection */}
-              <div className="form-grid-2">
-                <div className="form-row">
-                  <label>Organizador / DM</label>
-                  <select value={formAuthor} onChange={(e) => setFormAuthor(e.target.value)}>
-                    {DEFAULT_CALENDAR_AUTHORS.map((author) => (
-                      <option key={author} value={author}>
-                        {author}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-row">
-                  <label>Categoría</label>
-                  <select value={formCategory} onChange={(e) => setFormCategory(e.target.value)}>
-                    <option value="CAMPAÑA">CAMPAÑA</option>
-                    {tags.filter((t) => t.category === 'TYPE').map((tag) => (
-                      <option key={tag.id} value={tag.label}>
-                        {tag.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Categoría (etiquetas por defecto) */}
+              <div className="form-row">
+                <label>Categoría</label>
+                <select value={formCategory} onChange={(e) => setFormCategory(e.target.value)}>
+                  {tags.map((tag) => (
+                    <option key={tag.id} value={tag.label}>
+                      {tag.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Recurrence (Google Calendar style) */}
@@ -1103,13 +1089,15 @@ export const InteractiveCalendar: FC = () => {
 
               {/* Visual Style Selection */}
               <div className="form-row">
-                <label>Color del evento (independiente del autor y la categoría)</label>
+                <label>Color del evento</label>
                 <div className="style-preset-selector">
                   {PRESET_EVENT_STYLES.map((preset) => (
                     <button
                       key={preset.id}
                       type="button"
-                      className={`preset-style-btn ${formStyleId === preset.id ? 'active' : ''}`}
+                      className={`preset-style-btn preset-style-btn--swatch ${
+                        formStyleId === preset.id ? 'active' : ''
+                      }`}
                       style={{ background: preset.background, color: preset.textColor }}
                       onClick={() => {
                         setFormStyleId(preset.id);
@@ -1119,14 +1107,14 @@ export const InteractiveCalendar: FC = () => {
                         setFormCustomTextColor(preset.textColor);
                       }}
                       title={preset.label}
-                    >
-                      {preset.label}
-                    </button>
+                      aria-label={preset.label}
+                    />
                   ))}
                   <button
                     type="button"
-                    className={`preset-style-btn ${formStyleId === 'custom' ? 'active' : ''}`}
-                    style={{ background: formCustomColor, color: formCustomTextColor }}
+                    className={`preset-style-btn preset-style-btn--custom ${
+                      formStyleId === 'custom' ? 'active' : ''
+                    }`}
                     onClick={() => setFormStyleId('custom')}
                     title="Color personalizado para este evento"
                   >
