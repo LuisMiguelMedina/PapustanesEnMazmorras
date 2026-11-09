@@ -7,7 +7,8 @@
     "build": "tsc --project tsconfig.json --noEmit && vite build",
     "build:gh-pages": "GITHUB_PAGES=true npm run build && node generate-404.js",
     "sync:gh-pages-root": "cp dist/index.html index.html && rm -rf assets && cp -r dist/assets assets && cp dist/404.html 404.html && cp dist/.nojekyll .nojekyll",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host",
+    "test": "vitest run"
   },
   "prettier": {
     "printWidth": 100,
@@ -29,6 +30,7 @@
     "@vitejs/plugin-react": "^6.0.2",
     "sass": "^1.100.0",
     "typescript": "~5.9.2",
-    "vite": "^8.0.14"
+    "vite": "^8.0.14",
+    "vitest": "^3.2.4"
   }
 }
