@@ -1011,14 +1011,22 @@ export const InteractiveCalendar: FC = () => {
                 type="button"
                 className="btn-modal-close"
                 onClick={() => {
+                  if (deleteConfirmPrompt) {
+                    setDeleteConfirmPrompt(null);
+                    return;
+                  }
                   setShowEventModal(false);
                   setDeleteConfirmPrompt(null);
                 }}
+                aria-label={deleteConfirmPrompt ? 'Cerrar confirmación de eliminación' : 'Cerrar modal'}
               >
                 ✕
               </button>
             </div>
 
+            <div
+              className={`event-modal-shell ${deleteConfirmPrompt ? 'is-delete-confirming' : ''}`}
+            >
             <form onSubmit={handleSaveEvent} className="modal-form-cyber">
               <div className="modal-body-scrollable">
                 {formError && (
@@ -1231,61 +1239,53 @@ export const InteractiveCalendar: FC = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <h4 id="event-delete-confirm-title" className="inner-confirm-title">
-                  <i className="fas fa-trash-alt me-2 text-danger" />
-                  {shouldOfferSeriesDeleteChoice(selectedEvent)
-                    ? '¿Eliminar solo este día o toda la serie?'
-                    : '¿Eliminar este evento?'}
+                  <i className="fas fa-trash-alt me-2" aria-hidden />
+                  {shouldOfferSeriesDeleteChoice(selectedEvent, deleteConfirmPrompt)
+                    ? '¿Eliminar este día o toda la serie?'
+                    : 'Eliminar evento'}
                 </h4>
                 <p className="inner-confirm-body">
-                  <strong>{deleteConfirmPrompt.event.title}</strong>
-                  {shouldOfferSeriesDeleteChoice(selectedEvent) && (
-                    <>
-                      {' '}
-                      — fecha <strong>{deleteConfirmPrompt.instanceDate}</strong>
-                    </>
+                  <span className="inner-confirm-event-name">{deleteConfirmPrompt.event.title}</span>
+                  {shouldOfferSeriesDeleteChoice(selectedEvent, deleteConfirmPrompt) && (
+                    <span className="inner-confirm-date">
+                      Fecha: {deleteConfirmPrompt.instanceDate}
+                    </span>
                   )}
                 </p>
-                <div className="inner-confirm-actions">
-                  {shouldOfferSeriesDeleteChoice(selectedEvent) ? (
+                <nav className="inner-confirm-actions" aria-label="Opciones de eliminación">
+                  {shouldOfferSeriesDeleteChoice(selectedEvent, deleteConfirmPrompt) ? (
                     <>
                       <button
                         type="button"
-                        className="btn-submit-cyber"
+                        className="btn-delete-choice btn-delete-choice--occurrence"
                         disabled={isSubmitting}
                         onClick={() => void handleDeleteSingleOccurrence()}
                       >
-                        Solo este evento (esta fecha)
+                        Evento individual (esta fecha)
                       </button>
                       <button
                         type="button"
-                        className="btn-danger-cyber"
+                        className="btn-delete-choice btn-delete-choice--series"
                         disabled={isSubmitting}
                         onClick={() => void handleDeleteEntireSeries()}
                       >
-                        Toda la serie repetida
+                        Serie completa
                       </button>
                     </>
                   ) : (
                     <button
                       type="button"
-                      className="btn-danger-cyber"
+                      className="btn-delete-choice btn-delete-choice--series"
                       disabled={isSubmitting}
                       onClick={() => void handleConfirmDeleteSingleEvent()}
                     >
-                      Sí, eliminar evento
+                      Eliminar definitivamente
                     </button>
                   )}
-                  <button
-                    type="button"
-                    className="btn-cancel-cyber"
-                    disabled={isSubmitting}
-                    onClick={() => setDeleteConfirmPrompt(null)}
-                  >
-                    Cancelar
-                  </button>
-                </div>
+                </nav>
               </div>
             )}
+            </div>
           </div>
         </div>
       )}

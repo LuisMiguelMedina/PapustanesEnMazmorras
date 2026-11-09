@@ -787,36 +787,142 @@
       margin: auto;
       position: relative;
 
-      &.event-edit-modal .event-modal-inner-confirm {
-        position: absolute;
-        inset: 0;
-        z-index: 5;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 1.5rem 1.75rem;
-        background: rgba(8, 10, 18, 0.92);
-        backdrop-filter: blur(4px);
-        border-radius: 12px;
-
-        .inner-confirm-title {
-          font-family: var(--font-fantasy-display, inherit);
-          font-size: 1.05rem;
-          color: #ffedd5;
-          margin: 0 0 0.75rem;
-        }
-
-        .inner-confirm-body {
-          color: #cbd5e1;
-          font-size: 0.92rem;
-          margin-bottom: 1.25rem;
-          line-height: 1.45;
-        }
-
-        .inner-confirm-actions {
+      &.event-edit-modal {
+        .event-modal-shell {
+          position: relative;
+          flex: 1 1 auto;
+          min-height: 0;
           display: flex;
           flex-direction: column;
-          gap: 0.55rem;
+
+          .modal-form-cyber {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            transition: opacity 0.2s ease, filter 0.2s ease;
+          }
+
+          &.is-delete-confirming .modal-form-cyber {
+            pointer-events: none;
+            opacity: 0.28;
+            filter: blur(2px);
+          }
+        }
+
+        .event-modal-inner-confirm {
+          position: absolute;
+          inset: 0;
+          z-index: 6;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: stretch;
+          padding: 1.75rem 1.5rem;
+          background: linear-gradient(
+            180deg,
+            rgba(6, 7, 13, 0.72) 0%,
+            rgba(8, 10, 18, 0.96) 45%,
+            rgba(8, 10, 18, 0.98) 100%
+          );
+          backdrop-filter: blur(6px);
+          animation: deleteConfirmFadeIn 0.18s ease-out;
+
+          .inner-confirm-title {
+            font-family: var(--font-fantasy-display, inherit);
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: #ffedd5;
+            margin: 0 0 0.65rem;
+            line-height: 1.35;
+
+            i {
+              color: #f87171;
+            }
+          }
+
+          .inner-confirm-body {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            margin-bottom: 1.35rem;
+
+            .inner-confirm-event-name {
+              color: #fde68a;
+              font-family: var(--font-fantasy-display, inherit);
+              font-size: 1.05rem;
+            }
+
+            .inner-confirm-date {
+              color: #94a3b8;
+              font-family: 'JetBrains Mono', monospace;
+              font-size: 0.78rem;
+            }
+          }
+
+          .inner-confirm-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+          }
+
+          .inner-confirm-hint {
+            margin: 1rem 0 0;
+            font-size: 0.72rem;
+            color: #64748b;
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+          }
+
+          .btn-delete-choice {
+            width: 100%;
+            background: transparent;
+            border-radius: 8px;
+            padding: 0.7rem 1rem;
+            font-family: var(--font-fantasy-display, inherit);
+            font-size: 0.88rem;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s, box-shadow 0.15s, background 0.15s;
+
+            &:disabled {
+              opacity: 0.45;
+              cursor: not-allowed;
+            }
+
+            &--occurrence {
+              border: 1px solid rgba(245, 158, 11, 0.65);
+              color: #fcd34d;
+
+              &:hover:not(:disabled) {
+                border-color: #f59e0b;
+                color: #ffedd5;
+                background: rgba(245, 158, 11, 0.1);
+                box-shadow: 0 0 14px rgba(234, 88, 12, 0.18);
+              }
+            }
+
+            &--series {
+              border: 1px solid rgba(248, 113, 113, 0.55);
+              color: #fca5a5;
+
+              &:hover:not(:disabled) {
+                border-color: #ef4444;
+                color: #fecaca;
+                background: rgba(239, 68, 68, 0.1);
+                box-shadow: 0 0 14px rgba(239, 68, 68, 0.15);
+              }
+            }
+          }
+        }
+      }
+
+      @keyframes deleteConfirmFadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
         }
       }
 

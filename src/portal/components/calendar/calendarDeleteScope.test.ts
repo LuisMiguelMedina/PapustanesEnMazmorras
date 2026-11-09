@@ -27,6 +27,12 @@ describe('calendarDeleteScope', () => {
   it('ofrece elección serie/ocurrencia solo si hay recurrencia', () => {
     expect(shouldOfferSeriesDeleteChoice(baseEvent)).toBe(true);
     expect(shouldOfferSeriesDeleteChoice({ ...baseEvent, recurrence: 'NONE' })).toBe(false);
+    expect(
+      shouldOfferSeriesDeleteChoice(
+        { ...baseEvent, recurrence: 'NONE' },
+        { event: baseEvent, instanceDate: '2026-10-17', isRecurringInstance: true },
+      ),
+    ).toBe(true);
   });
 
   it('usa editingOccurrence cuando coincide con el evento', () => {

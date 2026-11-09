@@ -4,9 +4,13 @@ export function isRecurringEvent(event: CalendarEvent): boolean {
   return event.recurrence !== 'NONE';
 }
 
-/** Siempre ofrece elegir ocurrencia vs serie cuando el evento se repite. */
-export function shouldOfferSeriesDeleteChoice(event: CalendarEvent): boolean {
-  return isRecurringEvent(event);
+/** Serie completa vs una fecha: cuando el evento se repite o se abrió una ocurrencia recurrente. */
+export function shouldOfferSeriesDeleteChoice(
+  event: CalendarEvent,
+  occurrence?: CalendarEventOccurrence | null,
+): boolean {
+  if (isRecurringEvent(event)) return true;
+  return Boolean(occurrence?.isRecurringInstance);
 }
 
 /**
