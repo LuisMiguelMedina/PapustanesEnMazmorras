@@ -398,7 +398,7 @@ export const InteractiveCalendar: FC = () => {
       `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
     setFormDate(defaultDate);
     setFormTime('20:00');
-    setFormAuthor('PAPUSTANES');
+    setFormAuthor(DEFAULT_CALENDAR_AUTHORS[3] || 'LUISMI');
     const defaultCategory = tags.find((t) => t.label === 'CAMPAÑA') || tags[0];
     setFormCategory(defaultCategory?.label || 'CAMPAÑA');
     const initialPreset = PRESET_EVENT_STYLES[0];
@@ -427,7 +427,7 @@ export const InteractiveCalendar: FC = () => {
     setFormTitle(evt.title);
     setFormDate(occurrence.instanceDate);
     setFormTime(evt.time || '20:00');
-    setFormAuthor(evt.authorTag || 'PAPUSTANES');
+    setFormAuthor(evt.authorTag || DEFAULT_CALENDAR_AUTHORS[3] || 'LUISMI');
     setFormCategory(evt.categoryTag || 'CAMPAÑA');
 
     const matchedPreset =
@@ -1148,16 +1148,31 @@ export const InteractiveCalendar: FC = () => {
                 </div>
               </div>
 
-              {/* Categoría (etiquetas por defecto) */}
-              <div className="form-row">
-                <label>Categoría</label>
-                <select value={formCategory} onChange={(e) => setFormCategory(e.target.value)}>
-                  {tags.map((tag) => (
-                    <option key={tag.id} value={tag.label}>
-                      {tag.label}
-                    </option>
-                  ))}
-                </select>
+              <div className="form-grid-2">
+                <div className="form-row">
+                  <label>Autor / Organizador</label>
+                  <select value={formAuthor} onChange={(e) => setFormAuthor(e.target.value)}>
+                    {(DEFAULT_CALENDAR_AUTHORS as readonly string[]).includes(formAuthor) ? null : (
+                      <option value={formAuthor}>{formAuthor}</option>
+                    )}
+                    {DEFAULT_CALENDAR_AUTHORS.map((author) => (
+                      <option key={author} value={author}>
+                        {author}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-row">
+                  <label>Categoría</label>
+                  <select value={formCategory} onChange={(e) => setFormCategory(e.target.value)}>
+                    {tags.map((tag) => (
+                      <option key={tag.id} value={tag.label}>
+                        {tag.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Recurrence (Google Calendar style) */}
