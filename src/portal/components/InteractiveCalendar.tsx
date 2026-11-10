@@ -16,6 +16,15 @@ import {
   resolveDeleteOccurrence,
   shouldOfferSeriesDeleteChoice,
 } from './calendar/calendarDeleteScope';
+import {
+  type CustomColorInputMode,
+  parseCssColorToMode,
+  parseHexColor,
+  resolveCustomEventColor,
+} from './calendar/calendarCustomColor';
+
+/** Solo compatibilidad con datos/ICS existentes; ya no se muestra en el formulario. */
+const LEGACY_EVENT_CATEGORY_TAG = 'CAMPAÑA';
 import { CalendarDataAccess } from '../dataAccess/CalendarDataAccess';
 import './InteractiveCalendar.scss';
 
@@ -106,10 +115,21 @@ export const InteractiveCalendar: FC = () => {
   const [formDate, setFormDate] = useState<string>('');
   const [formTime, setFormTime] = useState<string>('');
   const [formAuthor, setFormAuthor] = useState<string>('PAC');
-  const [formCategory, setFormCategory] = useState<string>('CAMPAÑA');
   const [formStyleId, setFormStyleId] = useState<string>('elixir_gradient');
   const [formCustomColor, setFormCustomColor] = useState<string>('');
   const [formCustomTextColor, setFormCustomTextColor] = useState<string>('#ffffff');
+  const [customColorMode, setCustomColorMode] = useState<CustomColorInputMode>('hex');
+  const [customColorHex, setCustomColorHex] = useState<string>('#38b6ff');
+  const [customColorRgb, setCustomColorRgb] = useState({ r: '56', g: '182', b: '255' });
+
+  const customColorResolved = useMemo(() => {
+    if (formStyleId !== 'custom') return formCustomColor;
+    return (
+      resolveCustomEventColor(customColorMode, customColorHex, customColorRgb) ||
+      parseHexColor(customColorHex) ||
+      '#38b6ff'
+    );
+  }, [formStyleId, formCustomColor, customColorMode, customColorHex, customColorRgb]);
   const [formRecurrence, setFormRecurrence] = useState<RecurrenceType>('NONE');
   const [formDesc, setFormDesc] = useState<string>('');
   const [formError, setFormError] = useState<string>('');
@@ -399,8 +419,6 @@ export const InteractiveCalendar: FC = () => {
     setFormDate(defaultDate);
     setFormTime('20:00');
     setFormAuthor(DEFAULT_CALENDAR_AUTHORS[3] || 'LUISMI');
-    const defaultCategory = tags.find((t) => t.label === 'CAMPAÑA') || tags[0];
-    setFormCategory(defaultCategory?.label || 'CAMPAÑA');
     const initialPreset = PRESET_EVENT_STYLES[0];
     if (initialPreset) {
       setFormStyleId(initialPreset.id);
@@ -413,6 +431,9 @@ export const InteractiveCalendar: FC = () => {
       setFormCustomColor('#38b6ff');
       setFormCustomTextColor('#000000');
     }
+    setCustomColorMode('hex');
+    setCustomColorHex('#38b6ff');
+    setCustomColorRgb({ r: '56', g: '182', b: '255' });
     setFormRecurrence('NONE');
     setFormDesc('');
     setFormError('');
@@ -428,8 +449,6 @@ export const InteractiveCalendar: FC = () => {
     setFormDate(occurrence.instanceDate);
     setFormTime(evt.time || '20:00');
     setFormAuthor(evt.authorTag || DEFAULT_CALENDAR_AUTHORS[3] || 'LUISMI');
-    setFormCategory(evt.categoryTag || 'CAMPAÑA');
-
     const matchedPreset =
       PRESET_EVENT_STYLES.find((p) => p.id === evt.visualStyleId) ||
       PRESET_EVENT_STYLES.find((p) => p.background.toLowerCase() === evt.colorVariant?.toLowerCase());
@@ -443,6 +462,16 @@ export const InteractiveCalendar: FC = () => {
       setFormStyleId('custom');
       setFormCustomColor(evt.colorVariant);
       setFormCustomTextColor(evt.textColor || '#ffffff');
+      const parsed = parseCssColorToMode(evt.colorVariant);
+      if (parsed) {
+        setCustomColorMode(parsed.mode);
+        setCustomColorHex(parsed.hex);
+        setCustomColorRgb(parsed.rgb);
+      } else {
+        setCustomColorMode('hex');
+        setCustomColorHex('#38b6ff');
+        setCustomColorRgb({ r: '56', g: '182', b: '255' });
+      }
     }
 
     setFormRecurrence(evt.recurrence);
@@ -474,8 +503,17 @@ export const InteractiveCalendar: FC = () => {
     if (selectedPreset) {
       colorVariant = selectedPreset.background;
       textColor = selectedPreset.textColor;
-    } else if (formStyleId === 'custom' && formCustomColor) {
-      colorVariant = formCustomColor;
+    } else if (formStyleId === 'custom') {
+      const resolved = resolveCustomEventColor(customColorMode, customColorHex, customColorRgb);
+      if (!resolved) {
+        setFormError(
+          customColorMode === 'hex'
+            ? 'Color hex no válido. Usa formato #RRGGBB o #RGB.'
+            : 'Color RGB no válido. Usa valores 0–255 en R, G y B.',
+        );
+        return;
+      }
+      colorVariant = resolved;
       textColor = formCustomTextColor;
     } else if (PRESET_EVENT_STYLES.length > 0) {
       colorVariant = PRESET_EVENT_STYLES[0].background;
@@ -491,7 +529,7 @@ export const InteractiveCalendar: FC = () => {
       date: formDate,
       time: formTime.trim(),
       authorTag: formAuthor,
-      categoryTag: formCategory,
+      categoryTag: selectedEvent?.categoryTag || LEGACY_EVENT_CATEGORY_TAG,
       colorVariant,
       textColor,
       visualStyleId: selectedPreset ? selectedPreset.id : formStyleId === 'custom' ? 'custom' : undefined,
@@ -1148,31 +1186,18 @@ export const InteractiveCalendar: FC = () => {
                 </div>
               </div>
 
-              <div className="form-grid-2">
-                <div className="form-row">
-                  <label>Autor / Organizador</label>
-                  <select value={formAuthor} onChange={(e) => setFormAuthor(e.target.value)}>
-                    {(DEFAULT_CALENDAR_AUTHORS as readonly string[]).includes(formAuthor) ? null : (
-                      <option value={formAuthor}>{formAuthor}</option>
-                    )}
-                    {DEFAULT_CALENDAR_AUTHORS.map((author) => (
-                      <option key={author} value={author}>
-                        {author}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-row">
-                  <label>Categoría</label>
-                  <select value={formCategory} onChange={(e) => setFormCategory(e.target.value)}>
-                    {tags.map((tag) => (
-                      <option key={tag.id} value={tag.label}>
-                        {tag.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div className="form-row">
+                <label>Autor / Organizador</label>
+                <select value={formAuthor} onChange={(e) => setFormAuthor(e.target.value)}>
+                  {(DEFAULT_CALENDAR_AUTHORS as readonly string[]).includes(formAuthor) ? null : (
+                    <option value={formAuthor}>{formAuthor}</option>
+                  )}
+                  {DEFAULT_CALENDAR_AUTHORS.map((author) => (
+                    <option key={author} value={author}>
+                      {author}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Recurrence (Google Calendar style) */}
@@ -1223,35 +1248,135 @@ export const InteractiveCalendar: FC = () => {
                     className={`preset-style-btn preset-style-btn--custom ${
                       formStyleId === 'custom' ? 'active' : ''
                     }`}
-                    onClick={() => setFormStyleId('custom')}
+                    onClick={() => {
+                      setFormStyleId('custom');
+                      setCustomColorMode('hex');
+                      const parsed = parseCssColorToMode(formCustomColor);
+                      if (parsed) {
+                        setCustomColorHex(parsed.hex);
+                        setCustomColorRgb(parsed.rgb);
+                      }
+                    }}
                     title="Color personalizado para este evento"
                   >
                     Personalizado
                   </button>
                 </div>
                 {formStyleId === 'custom' && (
-                  <div className="d-flex flex-wrap align-items-center gap-2 mt-2">
-                    <input
-                      type="color"
-                      className="color-picker-input-cyber"
-                      value={formCustomColor.startsWith('#') ? formCustomColor : '#38b6ff'}
-                      onChange={(e) => setFormCustomColor(e.target.value)}
-                      aria-label="Color de fondo del evento"
-                    />
-                    <button
-                      type="button"
-                      className={`btn-tag-text-color ${formCustomTextColor === '#ffffff' ? 'active' : ''}`}
-                      onClick={() => setFormCustomTextColor('#ffffff')}
+                  <div className="custom-color-editor mt-2">
+                    <div className="custom-color-mode-toggle" role="tablist" aria-label="Formato de color">
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={customColorMode === 'hex'}
+                        className={customColorMode === 'hex' ? 'active' : ''}
+                        onClick={() => setCustomColorMode('hex')}
+                      >
+                        Hexadecimal
+                      </button>
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={customColorMode === 'rgb'}
+                        className={customColorMode === 'rgb' ? 'active' : ''}
+                        onClick={() => setCustomColorMode('rgb')}
+                      >
+                        RGB
+                      </button>
+                    </div>
+
+                    {customColorMode === 'hex' ? (
+                      <div className="custom-color-fields">
+                        <input
+                          type="color"
+                          className="color-picker-input-cyber"
+                          value={parseHexColor(customColorHex) || '#38b6ff'}
+                          onChange={(e) => {
+                            setCustomColorHex(e.target.value);
+                            setFormCustomColor(e.target.value);
+                          }}
+                          aria-label="Muestra de color"
+                        />
+                        <input
+                          type="text"
+                          className="form-control-cyber custom-color-text-input"
+                          placeholder="#RRGGBB"
+                          value={customColorHex}
+                          onChange={(e) => {
+                            setCustomColorHex(e.target.value);
+                            const p = parseHexColor(e.target.value);
+                            if (p) setFormCustomColor(p);
+                          }}
+                          spellCheck={false}
+                        />
+                      </div>
+                    ) : (
+                      <div className="custom-color-fields custom-color-fields--rgb">
+                        <label>
+                          R
+                          <input
+                            type="number"
+                            min={0}
+                            max={255}
+                            value={customColorRgb.r}
+                            onChange={(e) =>
+                              setCustomColorRgb((prev) => ({ ...prev, r: e.target.value }))
+                            }
+                          />
+                        </label>
+                        <label>
+                          G
+                          <input
+                            type="number"
+                            min={0}
+                            max={255}
+                            value={customColorRgb.g}
+                            onChange={(e) =>
+                              setCustomColorRgb((prev) => ({ ...prev, g: e.target.value }))
+                            }
+                          />
+                        </label>
+                        <label>
+                          B
+                          <input
+                            type="number"
+                            min={0}
+                            max={255}
+                            value={customColorRgb.b}
+                            onChange={(e) =>
+                              setCustomColorRgb((prev) => ({ ...prev, b: e.target.value }))
+                            }
+                          />
+                        </label>
+                      </div>
+                    )}
+
+                    <div
+                      className="custom-color-preview"
+                      style={{
+                        background: customColorResolved,
+                        color: formCustomTextColor,
+                      }}
                     >
-                      Texto blanco
-                    </button>
-                    <button
-                      type="button"
-                      className={`btn-tag-text-color ${formCustomTextColor === '#000000' ? 'active' : ''}`}
-                      onClick={() => setFormCustomTextColor('#000000')}
-                    >
-                      Texto negro
-                    </button>
+                      Vista previa del pill
+                    </div>
+
+                    <div className="custom-color-text-toggle">
+                      <button
+                        type="button"
+                        className={`btn-tag-text-color ${formCustomTextColor === '#ffffff' ? 'active' : ''}`}
+                        onClick={() => setFormCustomTextColor('#ffffff')}
+                      >
+                        Texto blanco
+                      </button>
+                      <button
+                        type="button"
+                        className={`btn-tag-text-color ${formCustomTextColor === '#000000' ? 'active' : ''}`}
+                        onClick={() => setFormCustomTextColor('#000000')}
+                      >
+                        Texto negro
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
