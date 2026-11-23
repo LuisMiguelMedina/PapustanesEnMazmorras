@@ -109,6 +109,7 @@ export const InteractiveCalendar: FC = () => {
     clientY: number;
     occurrence: CalendarEventOccurrence;
   } | null>(null);
+  const eventContextMenuRef = useRef<HTMLDivElement | null>(null);
 
   // Form state
   const [formTitle, setFormTitle] = useState<string>('');
@@ -152,15 +153,19 @@ export const InteractiveCalendar: FC = () => {
     const onKey = (ev: KeyboardEvent) => {
       if (ev.key === 'Escape') closeEventContextMenu();
     };
-    const onPointerDown = () => closeEventContextMenu();
+    const onOutsideClick = (ev: MouseEvent) => {
+      const target = ev.target as Node | null;
+      if (target && eventContextMenuRef.current?.contains(target)) return;
+      closeEventContextMenu();
+    };
     window.addEventListener('keydown', onKey);
     const timer = window.setTimeout(() => {
-      window.addEventListener('mousedown', onPointerDown);
+      window.addEventListener('click', onOutsideClick, true);
     }, 0);
     return () => {
       window.removeEventListener('keydown', onKey);
       window.clearTimeout(timer);
-      window.removeEventListener('mousedown', onPointerDown);
+      window.removeEventListener('click', onOutsideClick, true);
     };
   }, [eventContextMenu, closeEventContextMenu]);
 
@@ -174,8 +179,8 @@ export const InteractiveCalendar: FC = () => {
     const ctx = eventContextMenu;
     if (!ctx) return;
     const { occurrence } = ctx;
-    closeEventContextMenu();
     const evt = occurrence.event;
+    closeEventContextMenu();
     setIsSubmitting(true);
     const res = shouldOfferSeriesDeleteChoice(evt, occurrence)
       ? await skipOccurrenceOnSeries(evt, occurrence.instanceDate)
@@ -2062,6 +2067,7 @@ export const InteractiveCalendar: FC = () => {
         typeof document !== 'undefined' &&
         createPortal(
           <div
+            ref={eventContextMenuRef}
             className="calendar-context-menu"
             style={{
               position: 'fixed',
@@ -2071,6 +2077,7 @@ export const InteractiveCalendar: FC = () => {
             role="menu"
             aria-label="Acciones del evento"
             onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
             onContextMenu={(e) => e.preventDefault()}
           >
             <button
@@ -2090,12 +2097,6 @@ export const InteractiveCalendar: FC = () => {
             >
               <i className="fas fa-trash-alt me-2" aria-hidden />
               Eliminar
-              {shouldOfferSeriesDeleteChoice(
-                eventContextMenu.occurrence.event,
-                eventContextMenu.occurrence,
-              ) && (
-                <span className="context-menu-item-hint"> (esta fecha)</span>
-              )}
             </button>
           </div>,
           document.body,
