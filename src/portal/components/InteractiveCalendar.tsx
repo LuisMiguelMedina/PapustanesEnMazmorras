@@ -561,7 +561,11 @@ export const InteractiveCalendar: FC = () => {
       visualStyleId: selectedPreset ? selectedPreset.id : formStyleId === 'custom' ? 'custom' : undefined,
       recurrence: formRecurrence,
       description: formDesc.trim(),
-      skippedOccurrenceDates: selectedEvent?.skippedOccurrenceDates,
+      ...(formRecurrence !== 'NONE'
+        ? {
+            skippedOccurrenceDates: uniqueIsoDates(selectedEvent?.skippedOccurrenceDates ?? []),
+          }
+        : {}),
     };
 
     const res = await CalendarDataAccess.SaveEvent(eventPayload);

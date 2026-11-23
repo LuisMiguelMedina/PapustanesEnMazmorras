@@ -9,6 +9,7 @@ import { db } from '../firebase';
 import { CalendarEvent, CalendarEventTag, DEFAULT_TAGS } from '../models/Calendar/CalendarModels';
 import { ResponseObject } from '../models/Common/TransactionModels';
 import { INITIAL_CALENDAR_EVENTS } from '../data/calendar.seed';
+import { sanitizeCalendarEventForFirebase } from './calendarEventFirebase';
 
 const FIREBASE_CALENDAR_PATH = 'calendar/events';
 const LOCAL_STORAGE_BACKUP_KEY = 'mom_calendar_events_backup';
@@ -131,11 +132,11 @@ export class CalendarDataAccess {
       }
 
       const id = event.id || `evt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-      const eventToSave: CalendarEvent = {
+      const eventToSave: CalendarEvent = sanitizeCalendarEventForFirebase({
         ...event,
         id,
         updatedAt: Date.now(),
-      };
+      });
 
       const eventRef = ref(db, `${FIREBASE_CALENDAR_PATH}/${id}`);
       await set(eventRef, eventToSave);
