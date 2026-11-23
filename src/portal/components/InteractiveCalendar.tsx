@@ -11,7 +11,7 @@ import {
   PRESET_EVENT_STYLES,
   RecurrenceType,
 } from '../models/Calendar/CalendarModels';
-import { daysBetweenIso, shiftIsoDate, uniqueIsoDates } from './calendar/calendarDateUtils';
+import { uniqueIsoDates } from './calendar/calendarDateUtils';
 import {
   resolveDeleteOccurrence,
   shouldOfferSeriesDeleteChoice,
