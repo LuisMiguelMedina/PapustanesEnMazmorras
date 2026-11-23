@@ -27,5 +27,5 @@ export function sanitizeCalendarEventForFirebase(event: CalendarEvent): Calendar
     }
   }
 
-  return cleaned as CalendarEvent;
+  return cleaned as unknown as CalendarEvent;
 }
