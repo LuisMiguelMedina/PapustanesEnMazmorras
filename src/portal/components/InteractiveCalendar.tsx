@@ -22,6 +22,11 @@ import {
   parseHexColor,
   resolveCustomEventColor,
 } from './calendar/calendarCustomColor';
+import {
+  buildOneOffFromOccurrence,
+  duplicateOccurrenceAsEvent,
+  shiftSeriesAnchorAndSkips,
+} from './calendar/calendarMoveOccurrence';
 
 /** Solo compatibilidad con datos/ICS existentes; ya no se muestra en el formulario. */
 const LEGACY_EVENT_CATEGORY_TAG = 'CAMPAÑA';
@@ -173,6 +178,22 @@ export const InteractiveCalendar: FC = () => {
     if (!eventContextMenu) return;
     handleOpenEditModal(eventContextMenu.occurrence);
     closeEventContextMenu();
+  };
+
+  const handleContextMenuDuplicate = async () => {
+    const ctx = eventContextMenu;
+    if (!ctx) return;
+    const occurrence = ctx.occurrence;
+    const evt = events.find((e) => e.id === occurrence.event.id) ?? occurrence.event;
+    const newId = `evt_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const duplicate = duplicateOccurrenceAsEvent(evt, occurrence.instanceDate, newId);
+    closeEventContextMenu();
+    setIsSubmitting(true);
+    const res = await CalendarDataAccess.SaveEvent(duplicate);
+    setIsSubmitting(false);
+    if (res.CodeNumber !== 200) {
+      window.alert(res.Message || 'No se pudo duplicar el evento');
+    }
   };
 
   const handleContextMenuDelete = async () => {
@@ -615,11 +636,15 @@ export const InteractiveCalendar: FC = () => {
 
   const handleDropOccurrence = (occurrence: CalendarEventOccurrence, targetDate: string) => {
     if (occurrence.instanceDate === targetDate) return;
-    const evt = occurrence.event;
+    const evt = events.find((e) => e.id === occurrence.event.id) ?? occurrence.event;
     if (evt.recurrence === 'NONE') {
       void (async () => {
         setIsSubmitting(true);
-        const res = await CalendarDataAccess.SaveEvent({ ...evt, date: targetDate });
+        const res = await CalendarDataAccess.SaveEvent({
+          ...evt,
+          date: targetDate,
+          skippedOccurrenceDates: [],
+        });
         setIsSubmitting(false);
         if (res.CodeNumber !== 200) {
           window.alert(res.Message || 'No se pudo mover el evento');
@@ -627,52 +652,58 @@ export const InteractiveCalendar: FC = () => {
       })();
       return;
     }
-    setRecurringScopePrompt({ occurrence, targetDate });
+    setRecurringScopePrompt({ occurrence: { ...occurrence, event: evt }, targetDate });
   };
 
   const handleMoveSingleOccurrence = async () => {
     const prompt = recurringScopePrompt;
     if (!prompt || !prompt.targetDate) return;
-    const evt = prompt.occurrence.event;
+    const evt = events.find((e) => e.id === prompt.occurrence.event.id) ?? prompt.occurrence.event;
     const fromDate = prompt.occurrence.instanceDate;
     const toDate = prompt.targetDate;
+    const newId = `evt_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const oneOff = buildOneOffFromOccurrence(evt, toDate, newId);
+
     setIsSubmitting(true);
-    const skipRes = await skipOccurrenceOnSeries(evt, fromDate);
-    if (skipRes.CodeNumber !== 200) {
+    const createRes = await CalendarDataAccess.SaveEvent(oneOff);
+    if (createRes.CodeNumber !== 200) {
       setIsSubmitting(false);
-      setFormError(skipRes.Message || 'No se pudo omitir la fecha original');
+      setRecurringScopePrompt(null);
+      window.alert(createRes.Message || 'No se pudo crear el evento en la nueva fecha');
       return;
     }
-    const oneOff: CalendarEvent = {
-      ...evt,
-      id: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      date: toDate,
-      recurrence: 'NONE',
-      skippedOccurrenceDates: undefined,
-    };
-    const createRes = await CalendarDataAccess.SaveEvent(oneOff);
+
+    const skipRes = await skipOccurrenceOnSeries(evt, fromDate);
     setIsSubmitting(false);
     setRecurringScopePrompt(null);
-    if (createRes.CodeNumber !== 200) {
-      setFormError(createRes.Message || 'No se pudo crear el evento en la nueva fecha');
+
+    if (skipRes.CodeNumber !== 200) {
+      await CalendarDataAccess.DeleteEvent(newId);
+      window.alert(
+        skipRes.Message ||
+          'El evento se creó en la nueva fecha pero no se pudo quitar de la serie; se revirtió el cambio.',
+      );
     }
   };
 
   const handleMoveEntireSeries = async () => {
     const prompt = recurringScopePrompt;
     if (!prompt || !prompt.targetDate) return;
-    const evt = prompt.occurrence.event;
-    const delta = daysBetweenIso(prompt.occurrence.instanceDate, prompt.targetDate);
-    const newAnchor = shiftIsoDate(evt.date, delta);
+    const evt = events.find((e) => e.id === prompt.occurrence.event.id) ?? prompt.occurrence.event;
+    const shifted = shiftSeriesAnchorAndSkips(
+      evt,
+      prompt.occurrence.instanceDate,
+      prompt.targetDate,
+    );
     setIsSubmitting(true);
-    const res = await CalendarDataAccess.SaveEvent({ ...evt, date: newAnchor });
+    const res = await CalendarDataAccess.SaveEvent({ ...evt, ...shifted });
     setIsSubmitting(false);
     setRecurringScopePrompt(null);
     if (res.CodeNumber === 200) {
       setShowEventModal(false);
       setEditingOccurrence(null);
     } else {
-      setFormError(res.Message || 'No se pudo mover la serie');
+      window.alert(res.Message || 'No se pudo mover la serie');
     }
   };
 
@@ -2088,6 +2119,15 @@ export const InteractiveCalendar: FC = () => {
             >
               <i className="fas fa-pen-to-square me-2" aria-hidden />
               Editar
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="calendar-context-menu__item"
+              onClick={() => void handleContextMenuDuplicate()}
+            >
+              <i className="fas fa-clone me-2" aria-hidden />
+              Duplicar
             </button>
             <button
               type="button"
